@@ -523,10 +523,10 @@ class OpenAICompatibleLoader:
         base_url = llm_config.get("base_url", "")
         model = llm_config.get("model", "")
         api_key = llm_config.get("api_key", "")
-        provider = llm_config.get("provider", "Custom")
+        provider_name = llm_config.get("provider", "Custom")
 
         # Log using config
-        print(f"[LLMs_Toolkit] 使用配置: {provider} / {model}")
+        print(f"[LLMs_Toolkit] 使用配置: {provider_name} / {model}")
 
         # Handle prep_img: parse JSON list if applicable
         image_input = None
@@ -599,5 +599,3 @@ class OpenAICompatibleLoader:
 NODE_CLASS_MAPPINGS = {"OpenAICompatibleLoader": OpenAICompatibleLoader}
 NODE_DISPLAY_NAME_MAPPINGS = {"OpenAICompatibleLoader": "OpenAI Compatible Adapter"}
 
-WEB_DIRECTORY = "./web"
-__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

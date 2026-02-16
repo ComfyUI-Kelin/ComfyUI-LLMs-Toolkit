@@ -40,14 +40,15 @@ class JSONFixer:
             Fixed JSON string, or error message if unfixable
         """
         original = text
+        last_error = None
         
         # Step 1: Try direct parse first (already valid)
         try:
             parsed = json.loads(text)
-            print(f"# [🚦 LLMs_Toolkit] JSON already valid")
+            print(f"[LLMs_Toolkit] JSON already valid")
             return (json.dumps(parsed, ensure_ascii=False),)
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            last_error = e
         
         # Step 2: Extract JSON from markdown code blocks
         code_block_pattern = r"```(?:json)?\s*([\s\S]*?)```"
@@ -59,15 +60,14 @@ class JSONFixer:
         json_pattern = r'(\{[\s\S]*\}|\[[\s\S]*\])'
         json_matches = re.findall(json_pattern, text)
         if json_matches:
-            # Try each match
             for match in json_matches:
                 text = match.strip()
                 try:
                     parsed = json.loads(text)
-                    print(f"# [🚦 LLMs_Toolkit] extracted JSON from text")
+                    print(f"[LLMs_Toolkit] extracted JSON from text")
                     return (json.dumps(parsed, ensure_ascii=False),)
-                except json.JSONDecodeError:
-                    pass
+                except json.JSONDecodeError as e:
+                    last_error = e
         
         # Step 4: Apply common fixes
         fixed = text
@@ -75,34 +75,34 @@ class JSONFixer:
         # Remove trailing commas before } or ]
         fixed = re.sub(r',\s*([}\]])', r'\1', fixed)
         
-        # Replace single quotes with double quotes (careful with apostrophes)
-        # Only replace quotes that look like JSON string delimiters
+        # Replace single quotes with double quotes
         fixed = re.sub(r"'([^']*)':", r'"\1":', fixed)  # Keys
         fixed = re.sub(r":\s*'([^']*)'([,}\]])", r': "\1"\2', fixed)  # Values
         
-        # Try parse after fixes
         try:
             parsed = json.loads(fixed)
-            print(f"# [🚦 LLMs_Toolkit] fixed JSON (trailing commas, quotes)")
+            print(f"[LLMs_Toolkit] fixed JSON (trailing commas, quotes)")
             return (json.dumps(parsed, ensure_ascii=False),)
         except json.JSONDecodeError as e:
-            pass
+            last_error = e
         
         # Step 5: Last resort - try to find any valid JSON substring
-        for i in range(len(original)):
-            if original[i] in '{[':
-                for j in range(len(original), i, -1):
+        # Limit search to first 10000 chars to avoid O(n²) on large inputs
+        search_text = original[:10000]
+        for i in range(len(search_text)):
+            if search_text[i] in '{[':
+                for j in range(len(search_text), i, -1):
                     try:
-                        candidate = original[i:j]
+                        candidate = search_text[i:j]
                         parsed = json.loads(candidate)
-                        print(f"# [🚦 LLMs_Toolkit] extracted valid JSON substring")
+                        print(f"[LLMs_Toolkit] extracted valid JSON substring")
                         return (json.dumps(parsed, ensure_ascii=False),)
                     except json.JSONDecodeError:
                         continue
         
         # Failed to fix
-        error_msg = f"Unable to fix JSON: {str(e)}"
-        print(f"# [🚦 LLMs_Toolkit] ✗ {error_msg}")
+        error_msg = f"Unable to fix JSON: {last_error}"
+        print(f"[LLMs_Toolkit] {error_msg}")
         return (error_msg,)
 
 

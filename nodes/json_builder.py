@@ -2,6 +2,26 @@ import json
 from typing import Tuple
 
 
+def _parse_value(value: str):
+    """Parse a value string, attempting JSON decode first."""
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        return value if value else ""
+
+
+def _build_from_keys(keys: list, kwargs: dict) -> Tuple[str]:
+    """Build a JSON object from parallel key/value lists."""
+    result = {}
+    for i, key in enumerate(keys, start=1):
+        if key and key.strip():
+            value = kwargs.get(f"value_{i}", "")
+            result[key.strip()] = _parse_value(value)
+    json_str = json.dumps(result, ensure_ascii=False, indent=2)
+    print(f"[LLMs_Toolkit] built JSON with {len(result)} keys")
+    return (json_str,)
+
+
 class JSONBuilderSimple:
     """Build JSON object with 1 key-value pair."""
 
@@ -23,17 +43,7 @@ class JSONBuilderSimple:
     DESCRIPTION = "Build JSON with 1 key-value pair (Simple)."
 
     def build(self, key, value="") -> Tuple[str]:
-        result = {}
-        if key and key.strip():
-            try:
-                parsed_value = json.loads(value)
-                result[key.strip()] = parsed_value
-            except (json.JSONDecodeError, TypeError):
-                result[key.strip()] = value if value else ""
-        
-        json_str = json.dumps(result, ensure_ascii=False, indent=2)
-        print(f"# [🚦 LLMs_Toolkit] built simple JSON")
-        return (json_str,)
+        return _build_from_keys([key], {"value_1": value})
 
 
 class JSONBuilderMedium:
@@ -65,21 +75,7 @@ class JSONBuilderMedium:
     DESCRIPTION = "Build JSON with 5 key-value pairs (Medium)."
 
     def build(self, key_1, key_2, key_3, key_4, key_5, **kwargs) -> Tuple[str]:
-        result = {}
-        keys = [key_1, key_2, key_3, key_4, key_5]
-        
-        for i, key in enumerate(keys, start=1):
-            value = kwargs.get(f"value_{i}", "")
-            if key and key.strip():
-                try:
-                    parsed_value = json.loads(value)
-                    result[key.strip()] = parsed_value
-                except (json.JSONDecodeError, TypeError):
-                    result[key.strip()] = value if value else ""
-        
-        json_str = json.dumps(result, ensure_ascii=False, indent=2)
-        print(f"# [🚦 LLMs_Toolkit] built JSON with {len(result)} keys")
-        return (json_str,)
+        return _build_from_keys([key_1, key_2, key_3, key_4, key_5], kwargs)
 
 
 class JSONBuilderLarge:
@@ -122,22 +118,9 @@ class JSONBuilderLarge:
 
     def build(self, key_1, key_2, key_3, key_4, key_5, 
               key_6, key_7, key_8, key_9, key_10, **kwargs) -> Tuple[str]:
-        result = {}
         keys = [key_1, key_2, key_3, key_4, key_5,
                 key_6, key_7, key_8, key_9, key_10]
-        
-        for i, key in enumerate(keys, start=1):
-            value = kwargs.get(f"value_{i}", "")
-            if key and key.strip():
-                try:
-                    parsed_value = json.loads(value)
-                    result[key.strip()] = parsed_value
-                except (json.JSONDecodeError, TypeError):
-                    result[key.strip()] = value if value else ""
-        
-        json_str = json.dumps(result, ensure_ascii=False, indent=2)
-        print(f"# [🚦 LLMs_Toolkit] built JSON with {len(result)} keys")
-        return (json_str,)
+        return _build_from_keys(keys, kwargs)
 
 
 class JSONCombine:
@@ -180,13 +163,13 @@ class JSONCombine:
                 if isinstance(parsed, dict):
                     merged.update(parsed)
                 else:
-                    print(f"[🚦 JSON Combine] Warning: {key} is not a JSON object (got {type(parsed)}), skipping update.")
+                    print(f"[LLMs_Toolkit] Warning: {key} is not a JSON object (got {type(parsed)}), skipping update.")
                     
             except json.JSONDecodeError:
-                print(f"[🚦 JSON Combine] Warning: {key} is not valid JSON, skipping.")
+                print(f"[LLMs_Toolkit] Warning: {key} is not valid JSON, skipping.")
         
         json_str = json.dumps(merged, ensure_ascii=False, indent=2)
-        print(f"# [🚦 LLMs_Toolkit] Combined {len(kwargs)} inputs into JSON with {len(merged)} keys")
+        print(f"[LLMs_Toolkit] Combined {len(kwargs)} inputs into JSON with {len(merged)} keys")
         return (json_str,)
 
 

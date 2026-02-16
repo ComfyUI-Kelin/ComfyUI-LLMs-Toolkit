@@ -59,16 +59,16 @@ class JSONExtractor:
             else:
                 result = str(value)
             
-            print(f"# [🚦 LLMs_Toolkit] extracted {key}={result[:50]}...")
+            print(f"[LLMs_Toolkit] extracted {key}={result[:50]}...")
             return (result,)
             
         except json.JSONDecodeError as e:
             error_msg = f"Invalid JSON: {str(e)}"
-            print(f"# [🚦 LLMs_Toolkit] ✗ {error_msg}")
+            print(f"[LLMs_Toolkit] {error_msg}")
             return (error_msg,)
         except Exception as e:
             error_msg = f"Extraction error: {str(e)}"
-            print(f"# [🚦 LLMs_Toolkit] ✗ {error_msg}")
+            print(f"[LLMs_Toolkit] {error_msg}")
             return (error_msg,)
 
 

@@ -27,6 +27,14 @@ class ImagePreprocessor:
     FUNCTION = "preprocess"
     CATEGORY = "🚦ComfyUI_LLMs_Toolkit/Image"
 
+    def _tensor_to_pil(self, tensor: torch.Tensor) -> Image.Image:
+        """Convert a single [H, W, C] tensor to PIL Image."""
+        numpy_image = tensor.cpu().numpy()
+        if len(numpy_image.shape) == 3 and numpy_image.shape[2] == 1:
+            numpy_image = numpy_image.squeeze(-1)
+        numpy_image = (numpy_image * 255).astype('uint8')
+        return Image.fromarray(numpy_image)
+
     def preprocess(self, image: Optional[Union[str, Image.Image]], format: str = "PNG", quality: str = "High"):
         quality_map = {"High": 95, "Medium": 75, "Low": 50}
         quality_str = quality
@@ -35,33 +43,16 @@ class ImagePreprocessor:
         if image is None:
             raise ValueError("Image input cannot be None")
 
-        # Result list
         image_urls = []
 
-        # Handle Tensor Batch [B, H, W, C]
         if isinstance(image, torch.Tensor):
-            # Check if it's a batch (4D) or single (3D)
             if len(image.shape) == 4:
-                # Batch processing
                 for i in range(image.shape[0]):
-                    # Extract single image [H, W, C]
-                    single_image = image[i]
-                    numpy_image = single_image.cpu().numpy()
-                    if len(numpy_image.shape) == 3 and numpy_image.shape[2] == 1:  # Grayscale
-                         numpy_image = numpy_image.squeeze(-1)
-                    numpy_image = (numpy_image * 255).astype('uint8')
-                    pil_image = Image.fromarray(numpy_image)
-                    
+                    pil_image = self._tensor_to_pil(image[i])
                     url = self._process_single_image(pil_image, format, quality_str, quality_val)
                     image_urls.append(url)
             else:
-                # Single tensor image (e.g. from some other nodes?)
-                numpy_image = image.cpu().numpy()
-                if len(numpy_image.shape) == 3 and numpy_image.shape[2] == 1:
-                     numpy_image = numpy_image.squeeze(-1)
-                numpy_image = (numpy_image * 255).astype('uint8')
-                pil_image = Image.fromarray(numpy_image)
-                
+                pil_image = self._tensor_to_pil(image)
                 url = self._process_single_image(pil_image, format, quality_str, quality_val)
                 image_urls.append(url)
 
