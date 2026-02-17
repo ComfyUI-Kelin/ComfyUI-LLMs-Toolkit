@@ -1,5 +1,18 @@
 from typing import Optional
-from nodes.openai_compatible import ProviderRegistry
+
+# Provider URL mapping (self-contained to avoid cross-module import issues with ComfyUI)
+_BASE_URL_MAPPING = {
+    "Qwen/通义千问": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "DeepSeek/深度求索": "https://api.deepseek.com/v1",
+    "DouBao/豆包": "https://ark.cn-beijing.volces.com/api/v3",
+    "Spark/星火": "https://spark-api-open.xf-yun.com/v1",
+    "GLM/智谱清言": "https://open.bigmodel.cn/api/paas/v4/",
+    "Moonshot/月之暗面": "https://api.moonshot.cn/v1",
+    "Baichuan/百川": "https://api.baichuan-ai.com/v1",
+    "MiniMax/MiniMax": "https://api.minimax.chat/v1",
+    "StepFun/阶跃星辰": "https://api.stepfun.com/v1",
+    "SenseChat/日日新": "https://api.sensenova.cn/compatible-mode/v1",
+}
 
 
 class LLM_Loader:
@@ -61,13 +74,11 @@ class LLM_Loader:
     CATEGORY = "🚦ComfyUI_LLMs_Toolkit/Loader"
 
     def generate(self, provider: str, model: str, api_key: str, custom_base_url: str = ""):
-        # Use ProviderRegistry as single source of truth
         if provider == "Custom/自定义":
             actual_base_url = custom_base_url.strip()
             print(f"[LLMs_Toolkit] 配置加载: Custom URL ({actual_base_url}) / {model}")
         else:
-            provider_config = ProviderRegistry.get_provider(provider)
-            actual_base_url = provider_config.base_url
+            actual_base_url = _BASE_URL_MAPPING.get(provider, "")
             print(f"[LLMs_Toolkit] 配置加载: {provider} / {model}")
 
         config = {
