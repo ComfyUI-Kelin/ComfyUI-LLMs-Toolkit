@@ -427,7 +427,7 @@ class OpenAICompatibleLoader:
         # Log request size for debugging
         data_size_mb = len(data_bytes) / (1024 * 1024)
         if data_size_mb > 1:
-            print(f"[LLMs_Toolkit] 请求体大小: {data_size_mb:.2f} MB")
+            print(f"[LLMs_Toolkit] 图片请求体大小: {data_size_mb:.2f} MB")
 
         last_error = None
         for attempt in range(max_retries + 1):
@@ -588,7 +588,12 @@ class OpenAICompatibleLoader:
             # Log completion
             self._log_request_complete(response_content, input_tokens, output_tokens)
 
-            return (response_content, int(input_tokens), int(output_tokens))
+            return {
+                "ui": {
+                    "text": [f"Token Usage:\nInput: {int(input_tokens)}\nOutput: {int(output_tokens)}"]
+                },
+                "result": (response_content, int(input_tokens), int(output_tokens))
+            }
 
         except Exception as e:
             self._log_error(e, provider, model, request_size_mb)
