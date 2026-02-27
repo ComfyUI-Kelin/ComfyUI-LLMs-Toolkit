@@ -1,4 +1,5 @@
 import { app } from "../../scripts/app.js";
+import { ComfyWidgets } from "../../scripts/widgets.js";
 
 app.registerExtension({
     name: "ComfyUI-LLMs-Toolkit.displayTokens",
@@ -6,39 +7,46 @@ app.registerExtension({
         // We only care about the OpenAI Compatible Adapter node
         if (nodeData.name === "OpenAICompatibleLoader") {
             const onExecuted = nodeType.prototype.onExecuted;
-            
-            nodeType.prototype.onExecuted = function(message) {
+
+            nodeType.prototype.onExecuted = function (message) {
                 // Call original if it exists
                 if (onExecuted) {
                     onExecuted.apply(this, arguments);
                 }
-                
+
                 // If we got our token usage text string
                 if (message && message.text && message.text.length > 0) {
                     const text = message.text[0]; // Gets our formatted usage string
-                    
-                    // See if we already created a widget for this, if not create one
-                    let tokenWidget = this.widgets?.find(w => w.name === "display_token_usage");
-                    
+
+                    // See if we already created a widget for this
+                    let tokenWidget = this.widgets?.find(w => w.name === "display_token_usage_widget");
+
                     if (!tokenWidget) {
-                        tokenWidget = this.addWidget("text", "display_token_usage", text, () => {}, { 
-                            multiline: true, 
-                            serialize: false // don't save to workflow
-                        });
-                        
-                        // Force widget to bottom if it wasn't there
-                        const y = this.size[1];
-                        tokenWidget.y = y;
-                        tokenWidget.disabled = true; // Make it look like a label, readonly
-                        
-                        // Recalculate node size
-                        this.size[1] = Math.max(this.size[1], this.computeSize([this.size[0], this.size[1]])[1]);
+                        try {
+                            const w = ComfyWidgets["STRING"](this, "display_token_usage_widget", ["STRING", { multiline: true }], app).widget;
+                            w.inputEl.readOnly = true;
+                            w.inputEl.style.opacity = 0.8;
+                            w.value = text;
+                            tokenWidget = w;
+                        } catch (error) {
+                            console.error("[LLMs_Toolkit] Failed to create display widget:", error);
+                        }
                     } else {
                         tokenWidget.value = text;
                     }
-                    
-                    // Force UI update
-                    app.graph.setDirtyCanvas(true, true);
+
+                    // Resize node to fit the new text
+                    requestAnimationFrame(() => {
+                        const sz = this.computeSize();
+                        if (sz[0] < this.size[0]) {
+                            sz[0] = this.size[0];
+                        }
+                        if (sz[1] < this.size[1]) {
+                            sz[1] = this.size[1];
+                        }
+                        this.onResize?.(sz);
+                        app.graph.setDirtyCanvas(true, false);
+                    });
                 }
             };
         }
