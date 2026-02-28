@@ -1,8 +1,18 @@
+"""
+LLM Translator — Unix-philosophy translation node.
+
+Do One Thing and Do It Well: translate text via LLM API.
+Reuses the shared LLMClient for robustness.
+"""
+
 import time
 import json
-import urllib.request
-import urllib.error
 from typing import Dict, Any, Tuple
+
+try:
+    from .api_client import LLMClient
+except ImportError:
+    from api_client import LLMClient
 
 
 class LLMTranslator:
@@ -53,69 +63,6 @@ class LLMTranslator:
     FUNCTION = "translate"
     CATEGORY = "🚦ComfyUI_LLMs_Toolkit/Utility"
 
-    def __init__(self):
-        pass
-
-    def _call_api(
-        self,
-        llm_config: Dict[str, Any],
-        messages: list,
-        temperature: float = 0.3
-    ) -> str:
-        """调用LLM API - 核心通信逻辑"""
-        import ssl
-
-        base_url = llm_config.get("base_url", "").rstrip("/")
-        model = llm_config.get("model", "")
-        api_key = llm_config.get("api_key", "")
-
-        url = f"{base_url}/chat/completions"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
-
-        payload = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": 4096
-        }
-
-        ctx = ssl.create_default_context()
-        last_error = None
-
-        for attempt in range(3):
-            try:
-                req = urllib.request.Request(
-                    url, 
-                    data=json.dumps(payload).encode("utf-8"), 
-                    headers=headers, 
-                    method="POST"
-                )
-                
-                with urllib.request.urlopen(req, timeout=60, context=ctx) as response:
-                    data = json.loads(response.read().decode("utf-8"))
-                    
-                    if "choices" not in data or not data["choices"]:
-                        raise ValueError("Empty response from API")
-                        
-                    return data["choices"][0]["message"]["content"].strip()
-
-            except urllib.error.HTTPError as e:
-                error_body = e.read().decode("utf-8", errors="ignore")
-                raise Exception(f"HTTP Error {e.code}: {error_body}")
-            except (ssl.SSLError, urllib.error.URLError, ConnectionError, TimeoutError) as e:
-                last_error = e
-                print(f"[LLMs_Toolkit] Translator attempt {attempt + 1}/3 failed: {e}")
-                import time
-                time.sleep(1)
-                continue
-            except Exception as e:
-                raise Exception(f"Translation failed: {str(e)}")
-
-        raise Exception(f"Translation failed after 3 attempts: {last_error}")
-
     def translate(
         self,
         llm_config: Dict[str, Any],
@@ -123,39 +70,53 @@ class LLMTranslator:
         target_language: str,
         glossary: str = ""
     ) -> Tuple[str]:
-        """
-        执行翻译任务
-        Unix Philosophy: Clean input, clean output.
-        """
+        """Execute translation. Returns error text on failure instead of crashing."""
         if not text.strip():
             return ("",)
 
         start_time = time.time()
-        
-        # 1. 构建系统指令 (System Prompt)
+
+        # Build system instruction
         system_instruction = (
             f"You are a professional translator. Translate the following text into {target_language}. "
             "Maintain the original tone, style, and formatting. "
             "Output ONLY the translated text, no explanations."
         )
-
         if glossary.strip():
             system_instruction += f"\n\nGlossary (Strictly follow):\n{glossary}"
 
-        # 2. 构建消息体
+        # Build payload
         messages = [
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": text}
         ]
+        payload = {
+            "model": llm_config.get("model", ""),
+            "messages": messages,
+            "temperature": 0.3,
+            "max_tokens": 4096
+        }
 
-        # 3. 调用API (Opinionated defaults: temperature=0.3 for stability)
-        translated_text = self._call_api(llm_config, messages, temperature=0.3)
+        # Call API via shared client
+        try:
+            client = LLMClient(
+                base_url=llm_config.get("base_url", ""),
+                api_key=llm_config.get("api_key", ""),
+                max_retries=3,
+                timeout=60,
+            )
+            translated_text, _ = client.chat(payload)
 
-        # 4. 简单日志
-        elapsed = int((time.time() - start_time) * 1000)
-        print(f"[LLM Translator] {len(text)} chars -> {target_language} ({elapsed}ms)")
+            elapsed = int((time.time() - start_time) * 1000)
+            print(f"[LLM Translator] {len(text)} chars -> {target_language} ({elapsed}ms)")
 
-        return (translated_text,)
+            return (translated_text.strip(),)
+
+        except Exception as e:
+            elapsed = int((time.time() - start_time) * 1000)
+            print(f"[LLM Translator] ✗ Translation failed ({elapsed}ms): {e}")
+            return (f"[Translation Error] {str(e)[:200]}",)
+
 
 # ComfyUI Node Registration
 NODE_CLASS_MAPPINGS = {"LLMTranslator": LLMTranslator}

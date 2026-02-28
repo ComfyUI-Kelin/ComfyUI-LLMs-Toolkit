@@ -25,6 +25,8 @@ if nodes_dir.exists():
             spec = importlib.util.spec_from_file_location(module_name, py_file)
             module = importlib.util.module_from_spec(spec)
             sys.modules[module_name] = module
+            # Also register under simple name for inter-module imports
+            sys.modules[py_file.stem] = module
             spec.loader.exec_module(module)
             
             # Register node mappings
