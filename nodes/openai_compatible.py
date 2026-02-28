@@ -264,10 +264,9 @@ class OpenAICompatibleLoader:
             "max_tokens": max_tokens,
         }
         
-        # Inject seed if provided (OpenAI standard field) to control diversity
         # Seed enables ComfyUI to bypass cache when changed (e.g., set to 'random')
-        if seed > 0:
-            payload["seed"] = int(seed)
+        # However, we DO NOT inject it into the API payload to comply with CONTRIBUTING.md
+        # and prevent 400 Bad Request errors from strict APIs (like qwen3).
 
         # Calculate request size for diagnostics
         payload_bytes = json_lib.dumps(payload).encode("utf-8")

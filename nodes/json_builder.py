@@ -153,17 +153,26 @@ class JSONCombine:
             key = f"json_{i}"
             json_data = kwargs.get(key, "")
             
-            if not json_data or not json_data.strip():
+            if not json_data:
+                continue
+            
+            if isinstance(json_data, str) and not json_data.strip():
                 continue
                 
             try:
-                # Try parsing as JSON
-                parsed = json.loads(json_data)
-                
-                if isinstance(parsed, dict):
-                    merged.update(parsed)
+                # If it's already a dict (e.g., passed directly by another node)
+                if isinstance(json_data, dict):
+                    merged.update(json_data)
+                elif isinstance(json_data, str):
+                    # Try parsing as JSON
+                    parsed = json.loads(json_data)
+                    
+                    if isinstance(parsed, dict):
+                        merged.update(parsed)
+                    else:
+                        print(f"[LLMs_Toolkit] Warning: {key} is not a JSON object (got {type(parsed)}), skipping update.")
                 else:
-                    print(f"[LLMs_Toolkit] Warning: {key} is not a JSON object (got {type(parsed)}), skipping update.")
+                    print(f"[LLMs_Toolkit] Warning: {key} is not a valid JSON string or dictionary, skipping.")
                     
             except json.JSONDecodeError:
                 print(f"[LLMs_Toolkit] Warning: {key} is not valid JSON, skipping.")
