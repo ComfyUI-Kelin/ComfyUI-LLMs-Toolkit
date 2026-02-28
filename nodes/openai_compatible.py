@@ -1,6 +1,7 @@
 import time
 import random
 import json as json_lib
+import ssl
 import urllib.request
 import urllib.error
 from typing import Optional, List, Dict, Tuple, Any, Union
@@ -432,11 +433,19 @@ class OpenAICompatibleLoader:
             print(f"[LLMs_Toolkit] 图片请求体大小: {data_size_mb:.2f} MB")
 
         last_error = None
+        # Build a lenient SSL context to handle TLS compatibility issues
+        # (e.g. UNEXPECTED_EOF_WHILE_READING from some Chinese API providers)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        ssl_context.set_ciphers("DEFAULT")
+        ssl_context.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
+
         for attempt in range(max_retries + 1):
             try:
                 req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
 
-                with urllib.request.urlopen(req, timeout=180) as response:
+                with urllib.request.urlopen(req, timeout=180, context=ssl_context) as response:
                     response_body = response.read().decode("utf-8")
                     data = json_lib.loads(response_body)
 
