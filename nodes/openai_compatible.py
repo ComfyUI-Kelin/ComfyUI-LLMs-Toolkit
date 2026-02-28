@@ -267,7 +267,7 @@ class OpenAICompatibleLoader:
         # Inject seed if provided (OpenAI standard field) to control diversity
         # Seed enables ComfyUI to bypass cache when changed (e.g., set to 'random')
         if seed > 0:
-            payload["seed"] = seed
+            payload["seed"] = int(seed)
 
         # Calculate request size for diagnostics
         payload_bytes = json_lib.dumps(payload).encode("utf-8")
