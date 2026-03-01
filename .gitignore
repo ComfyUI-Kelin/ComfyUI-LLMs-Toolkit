@@ -35,6 +35,8 @@ Thumbs.db
 
 # Internal docs (private)
 CONTRIBUTING.md
+task_plan.md
 
 # Tests
 tests/
+test_api.py
