@@ -121,8 +121,8 @@ class OpenAICompatibleLoader:
             }
         }
 
-    RETURN_TYPES = ("STRING", "INT", "INT")
-    RETURN_NAMES = ("text", "input_tokens", "output_tokens")
+    RETURN_TYPES = ("STRING", "STRING", "INT", "INT")
+    RETURN_NAMES = ("text", "reasoning", "input_tokens", "output_tokens")
     FUNCTION = "generate"
     CATEGORY = "🚦ComfyUI_LLMs_Toolkit/Generate"
     OUTPUT_NODE = True
@@ -185,12 +185,12 @@ class OpenAICompatibleLoader:
     # ── Result helpers ───────────────────────────────────────────────────
 
     @staticmethod
-    def _success(text: str, in_tok: int, out_tok: int) -> dict:
+    def _success(text: str, reasoning: str, in_tok: int, out_tok: int) -> dict:
         return {
             "ui": {
                 "text": [f"Token Usage:\nInput: {in_tok}\nOutput: {out_tok}"]
             },
-            "result": (text, in_tok, out_tok)
+            "result": (text, reasoning, in_tok, out_tok)
         }
 
     @staticmethod
@@ -200,7 +200,7 @@ class OpenAICompatibleLoader:
             "ui": {
                 "text": [f"⚠ Error:\n{error_msg}"]
             },
-            "result": (f"[Error] {error_msg}", 0, 0)
+            "result": (f"[Error] {error_msg}", "", 0, 0)
         }
 
     # ── Main entry ───────────────────────────────────────────────────────
@@ -315,7 +315,7 @@ class OpenAICompatibleLoader:
             if enable_memory:
                 self._conversation_history.append({"role": "assistant", "content": response_content})
                 
-            return self._success(response_content, input_tokens, output_tokens)
+            return self._success(response_content, reasoning_content, input_tokens, output_tokens)
 
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
