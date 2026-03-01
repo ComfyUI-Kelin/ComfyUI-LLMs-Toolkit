@@ -24,10 +24,11 @@ app.registerExtension({
                     w.inputEl.style.opacity = 0.7;
                     w.inputEl.style.fontSize = "11px";
                     w.inputEl.style.fontFamily = "monospace";
+                    w.inputEl.style.minHeight = "40px"; // 增加文字框的最小高度，方便阅读
                     // THIS IS ESSENTIAL: Prevent the widget from being saved to the workflow JSON
                     // which causes standard fields (like seed, max_tokens) to shift indices!
                     w.serialize = false;
-                    w.computeSize = () => [0, -4]; // Optional: compress its virtual size slightly
+                    w.computeSize = () => [0, 40]; // 调整 ComfyUI 画布为其分配的高度
                     tokenWidget = w;
                 } catch (error) {
                     console.error("[LLMs_Toolkit] Failed to create token display widget:", error);
