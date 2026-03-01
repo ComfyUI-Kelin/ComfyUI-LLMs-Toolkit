@@ -6,56 +6,53 @@ app.registerExtension({
     async beforeRegisterNodeDef(nodeType, nodeData, app) {
         if (nodeData.name !== "OpenAICompatibleLoader") return;
 
-        const WIDGET_NAME = "token_usage_display";
+        // Remove any old logic regarding widget creation.
+        // We will directly draw the token usage on the right side of the node onto the canvas.
 
-        function updateTokenDisplay(text) {
-            // Find or create the display widget (append-only, never clear existing widgets)
-            let tokenWidget = this.widgets?.find(w => w.name === WIDGET_NAME);
+        const onDrawForeground = nodeType.prototype.onDrawForeground;
+        nodeType.prototype.onDrawForeground = function (ctx) {
+            onDrawForeground?.apply(this, arguments);
 
-            if (!tokenWidget) {
-                try {
-                    const w = ComfyWidgets["STRING"](
-                        this,
-                        WIDGET_NAME,
-                        ["STRING", { multiline: true }],
-                        app
-                    ).widget;
-                    w.inputEl.readOnly = true;
-                    w.inputEl.style.opacity = 0.7;
-                    w.inputEl.style.fontSize = "11px";
-                    w.inputEl.style.fontFamily = "monospace";
-                    w.inputEl.style.minHeight = "40px"; // 增加文字框的最小高度，方便阅读
-                    // THIS IS ESSENTIAL: Prevent the widget from being saved to the workflow JSON
-                    // which causes standard fields (like seed, max_tokens) to shift indices!
-                    w.serialize = false;
-                    w.computeSize = () => [0, 40]; // 调整 ComfyUI 画布为其分配的高度
-                    tokenWidget = w;
-                } catch (error) {
-                    console.error("[LLMs_Toolkit] Failed to create token display widget:", error);
-                    return;
+            if (this._llm_token_usage) {
+                ctx.save();
+                ctx.font = "12px sans-serif";
+                ctx.fillStyle = "rgba(160, 160, 160, 0.9)";
+                ctx.textAlign = "right";
+
+                // Draw below the output slots on the right side
+                let startY = 40;
+                if (this.outputs && this.outputs.length > 0) {
+                    startY = (this.outputs.length * 20) + 30; // estimate slot space
                 }
+
+                // Align to the bottom right area of the node
+                const lines = this._llm_token_usage;
+                let drawY = Math.max(startY, this.size[1] - (lines.length * 16) - 10);
+
+                for (let i = 0; i < lines.length; i++) {
+                    ctx.fillText(lines[i], this.size[0] - 15, drawY + (i * 16));
+                }
+                ctx.restore();
             }
-
-            // Update value
-            const displayText = Array.isArray(text) ? text.join("\n") : text;
-            tokenWidget.value = displayText;
-
-            // Resize node to fit the new content
-            requestAnimationFrame(() => {
-                const sz = this.computeSize();
-                if (sz[0] < this.size[0]) sz[0] = this.size[0];
-                if (sz[1] < this.size[1]) sz[1] = this.size[1];
-                this.onResize?.(sz);
-                app.graph.setDirtyCanvas(true, false);
-            });
-        }
+        };
 
         // Handle execution result from backend
         const onExecuted = nodeType.prototype.onExecuted;
         nodeType.prototype.onExecuted = function (message) {
             onExecuted?.apply(this, arguments);
-            if (message?.text?.length > 0) {
-                updateTokenDisplay.call(this, message.text);
+
+            // Clean up any legacy token widgets from older savings
+            const oldWidgetIdx = this.widgets?.findIndex(w => w.name === "token_usage_display");
+            if (oldWidgetIdx >= 0) {
+                this.widgets.splice(oldWidgetIdx, 1);
+            }
+
+            if (message?.text && message.text.length > 0) {
+                const text = Array.isArray(message.text) ? message.text.join("\n") : message.text;
+                this._llm_token_usage = text.split("\n");
+
+                // Request a redraw
+                app.graph.setDirtyCanvas(true, false);
             }
         };
     },
