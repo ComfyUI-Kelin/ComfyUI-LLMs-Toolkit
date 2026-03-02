@@ -72,7 +72,7 @@ pip install -r requirements.txt
 2. 填入你的 **API Key**（从服务商官网申请）
 3. 点击 **Check API** 验证连接 ✅
 4. 添加或编辑你想用的 **模型名称**
-5. 点击 **Save Provider**，并把 **Enable in Nodes** 开关打开
+5. 点击 **Save**，并把 **Enable in Nodes** 开关打开
 
 ### 第三步：在工作流中使用
 
@@ -134,7 +134,7 @@ pip install -r requirements.txt
 请确认：
 1. 打开了 **LLMs_Manager** 面板
 2. 选择了对应服务商并填入了 API Key
-3. 点击了 **Save Provider**
+3. 点击了 **Save**
 4. 将 **Enable in Nodes** 开关打开
 
 </details>

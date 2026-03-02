@@ -73,7 +73,7 @@ After installation, you'll see a **`LLMs_Manager`** button in ComfyUI's top menu
 2. Enter your **API Key** (get one from the provider's website)
 3. Click **Check API** to make sure it works ✅
 4. Add or edit the **models** you want to use
-5. Click **Save Provider** and toggle **Enable in Nodes** on
+5. Click **Save** and toggle **Enable in Nodes** on
 
 ### Step 3: Add Nodes to Your Workflow
 
@@ -135,7 +135,7 @@ After installation, you'll see a **`LLMs_Manager`** button in ComfyUI's top menu
 Make sure you've:
 1. Opened the **LLMs_Manager** panel
 2. Selected your provider and entered the API key
-3. Clicked **Save Provider**
+3. Clicked **Save**
 4. Toggled **Enable in Nodes** to ON
 
 </details>
