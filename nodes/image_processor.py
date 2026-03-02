@@ -83,7 +83,11 @@ class ImagePreprocessor:
 
         # Convert to base64
         buffered = io.BytesIO()
-        image.save(buffered, format=format, quality=quality_val)
+        save_kwargs = {"format": format}
+        if format in ["JPEG", "WebP"]:
+            save_kwargs["quality"] = quality_val
+        
+        image.save(buffered, **save_kwargs)
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         image_url = f"data:image/{format.lower()};base64,{img_str}"
         
