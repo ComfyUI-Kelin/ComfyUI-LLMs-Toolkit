@@ -1,8 +1,10 @@
-# ComfyUI-LLMs-Toolkit
-
 <div align="center">
 
-**Language / 语言切换**
+# ComfyUI-LLMs-Toolkit
+
+![Banner](asset/banner.png)
+
+**语言**
 
 [![简体中文](https://img.shields.io/badge/README-简体中文-red?style=for-the-badge)](README_CN.md)
 [![English](https://img.shields.io/badge/README-English-blue?style=for-the-badge)](README.md)
@@ -14,66 +16,38 @@
 [![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
 [![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&color=blue)](LICENSE)
 
-**为 ComfyUI 接入主流大语言模型的轻量级节点套件**
+**在 ComfyUI 中轻松调用各种大语言模型 — 无需 GPU，API 即用。**
 
 </div>
 
 ---
 
-## 项目简介
+## 这是什么？
 
-ComfyUI-LLMs-Toolkit 是一个轻量级的 ComfyUI 扩展，通过 API 调用的方式，让用户无需本地部署即可在工作流中使用 DeepSeek、通义千问、GPT 等主流大语言模型。
+ComfyUI-LLMs-Toolkit 让你可以在 ComfyUI 工作流中，通过简单的 API 调用直接使用 DeepSeek、通义千问、GPT、Moonshot 等主流大语言模型。
 
-### 核心优势
+不管你是想生成文本、翻译内容、用视觉模型处理图片，还是构建结构化 JSON 数据，这个工具包都能帮到你。
 
-- **零硬件门槛** — 无需 GPU，仅需 API 密钥即可使用
-- **多模型支持** — 集成国内外主流 LLM 服务商
-- **配置灵活** — 环境变量管理，安全便捷
-- **开箱即用** — 一键安装，五分钟上手
+### 主要特色
 
----
-
-## 支持的模型
-
-### 国内模型
-
-| 模型 | 提供商 | 核心优势 | 配置前缀 |
-|------|--------|----------|----------|
-| DeepSeek-V3 | DeepSeek | 数学推理、代码生成 | `DEEPSEEK_` |
-| Qwen-Max | 阿里巴巴 | 多模态、中文优化 | `QWEN_` |
-| GLM-4 | 智谱AI | 逻辑推理、知识问答 | `GLM_` |
-| Doubao-Pro | 字节跳动 | 对话生成、创意写作 | `DOUBAO_` |
-| Spark-Max | 科大讯飞 | 语言理解、文本分析 | `SPARK_` |
-| Moonshot-V1 | 月之暗面 | 长文本、深度理解 | `MOONSHOT_` |
-
-### 国际模型
-
-| 模型 | 提供商 | 核心优势 | 配置前缀 |
-|------|--------|----------|----------|
-| GPT-4o | OpenAI | 通用智能、多模态 | `OPENAI_` |
-| Claude-3.5 | Anthropic | 安全对话、长文本 | `CLAUDE_` |
-| Gemini-Pro | Google | 搜索增强、多语言 | `GEMINI_` |
+- **内置模型管理面板** — 在 ComfyUI 菜单栏中可视化管理所有 API 供应商，无需手动编辑配置文件
+- **12 家服务商预配置** — 通义千问、DeepSeek、智谱清言、豆包、星火、月之暗面、百川、MiniMax、阶跃星辰、日日新、心流、魔搭
+- **智能模型联动** — 选择供应商后，模型下拉框只显示该供应商的模型
+- **视觉多模态** — 通过 Image Preprocessor 节点把图片发给支持视觉的大模型
+- **不会崩溃** — API 调用失败时返回可读错误信息，工作流不会中断
+- **多轮对话记忆** — 开启 Memory 模式即可进行连续对话
 
 ---
 
-## 快速开始
+## 安装
 
-### 系统要求
+### 方式一：ComfyUI Manager（推荐）
 
-- Python >= 3.8
-- ComfyUI 最新版本
-- 内存 >= 4GB RAM
-- 稳定的网络连接
-
-### 安装
-
-#### 方法一：ComfyUI Manager（推荐）
-
-1. 在 ComfyUI 中打开 Manager 面板
+1. 打开 **ComfyUI Manager**
 2. 搜索 `ComfyUI-LLMs-Toolkit`
-3. 点击安装并重启 ComfyUI
+3. 点击 **安装** → **重启 ComfyUI**
 
-#### 方法二：手动安装
+### 方式二：手动安装
 
 ```bash
 cd ComfyUI/custom_nodes/
@@ -82,97 +56,142 @@ cd ComfyUI-LLMs-Toolkit
 pip install -r requirements.txt
 ```
 
-### 配置
+安装完成后重启 ComfyUI 即可。
 
-1. 复制环境变量模板：
+---
 
-```bash
-cp config/env.example .env
-```
+## 快速上手
 
-2. 编辑 `.env` 文件，配置你需要的 API 密钥：
+### 第一步：打开管理面板
 
-```bash
-# DeepSeek
-DEEPSEEK_API_KEY=sk-your_deepseek_key_here
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL_NAME=deepseek-chat
+安装完成后，你会在 ComfyUI 顶部菜单栏看到一个 **`LLMs_Manager`** 按钮，点击打开设置面板。
 
-# 通义千问
-QWEN_API_KEY=your_qwen_key_here
-QWEN_BASE_URL=https://dashscope.aliyuncs.com/api/v1
-QWEN_MODEL_NAME=qwen-max
+### 第二步：配置你的服务商
 
-# OpenAI
-OPENAI_API_KEY=sk-your_openai_key_here
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL_NAME=gpt-4o-mini
-```
+1. 从左侧选择一个 **服务商**（比如 DeepSeek）
+2. 填入你的 **API Key**（从服务商官网申请）
+3. 点击 **Check API** 验证连接 ✅
+4. 添加或编辑你想用的 **模型名称**
+5. 点击 **Save Provider**，并把 **Enable in Nodes** 开关打开
 
-### API 密钥获取
+### 第三步：在工作流中使用
 
-| 提供商 | 获取地址 | 免费额度 |
-|--------|----------|----------|
-| DeepSeek | [platform.deepseek.com](https://platform.deepseek.com/) | ¥500 |
-| 通义千问 | [dashscope.aliyun.com](https://dashscope.aliyun.com/) | 每月 100 万 tokens |
-| OpenAI | [platform.openai.com](https://platform.openai.com/) | $5 |
-| 智谱清言 | [open.bigmodel.cn](https://open.bigmodel.cn/) | 每月 500 万 tokens |
+1. 右键 → `Add Node` → `🚦ComfyUI_LLMs_Toolkit`
+2. 添加一个 **OpenAI Compatible Adapter** 节点
+3. 在下拉框中选择你配置好的服务商和模型
+4. 输入 Prompt，连接输出，点击 **执行**！
 
-### 使用
+### API Key 获取指南
 
-1. 重启 ComfyUI
-2. 右键添加节点，导航至 `Add Node` → `LLMs Toolkit`
-3. 选择需要的节点，配置参数，连接工作流
+| 服务商 | 官网 | 免费额度 |
+|--------|------|----------|
+| **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com/) | ¥500 |
+| **通义千问** | [dashscope.aliyun.com](https://dashscope.aliyun.com/) | 每月 100 万 tokens |
+| **智谱清言** | [open.bigmodel.cn](https://open.bigmodel.cn/) | 每月 500 万 tokens |
+| **月之暗面** | [platform.moonshot.cn](https://platform.moonshot.cn/) | 免费试用 |
+| **OpenAI** | [platform.openai.com](https://platform.openai.com/) | $5 |
+
+---
+
+## 节点一览
+
+### 大模型节点
+
+| 节点 | 用途 |
+|------|------|
+| **OpenAI Compatible Adapter** | 核心节点 — 向任意 OpenAI 兼容大模型发送 Prompt，获得文本回复。支持 System Prompt、多轮记忆、图片输入。 |
+| **LLMs Loader** | 辅助配置节点，输出供应商配置供高级场景使用。 |
+| **LLM Translator** | 快速翻译节点，一步完成文本翻译。 |
+
+### 视觉节点
+
+| 节点 | 用途 |
+|------|------|
+| **Image Preprocessor** | 将 ComfyUI 图片转换为大模型可读的格式。连接到 Adapter 节点的 `prep_img` 输入即可。 |
+
+### JSON 工具节点
+
+| 节点 | 用途 |
+|------|------|
+| **JSON Builder** (Simple / Medium / Large) | 构建包含 1、5 或 10 个键值对的结构化 JSON。 |
+| **JSON Combine** | 合并多个 JSON 对象。 |
+| **JSON Extractor** | 从 JSON 字符串中按路径提取值。 |
+| **JSON Fixer** | 自动修复大模型有时输出的格式错误的 JSON。 |
+
+### 文本工具节点
+
+| 节点 | 用途 |
+|------|------|
+| **String Template** | 用变量填充模板字符串，如 `"你好 {name}！"` → `"你好 Alice！"` |
 
 ---
 
 ## 常见问题
 
 <details>
-<summary><strong>如何获取 API 密钥？</strong></summary>
+<summary><strong>提示 "API Key is missing" 怎么办？</strong></summary>
 
-各厂商都提供免费试用额度：
-- DeepSeek：注册即送 ¥500 额度
-- 通义千问：阿里云账号认证后可获得大额度
-- OpenAI：新用户有 $5 免费额度
+请确认：
+1. 打开了 **LLMs_Manager** 面板
+2. 选择了对应服务商并填入了 API Key
+3. 点击了 **Save Provider**
+4. 将 **Enable in Nodes** 开关打开
 
 </details>
 
 <details>
-<summary><strong>遇到连接错误怎么办？</strong></summary>
+<summary><strong>可以用 Ollama 等本地模型吗？</strong></summary>
 
-常见解决方案：
-1. 检查网络是否能访问对应 API 服务
-2. 确认 API 密钥正确且有余额
-3. 确认 BASE_URL 格式正确
-4. 查看 ComfyUI 控制台日志
+可以！在 LLMs_Manager 中点击 **+ Custom Provider**，将 Base URL 设为本地地址（如 `http://localhost:11434/v1`），添加模型名称即可。任何 OpenAI 兼容的 API 都可以使用。
+
+</details>
+
+<details>
+<summary><strong>模型下拉框显示不对</strong></summary>
+
+在 Provider Manager 中修改配置后，请 **刷新浏览器**（Cmd+R / Ctrl+R）。模型列表会根据选择的服务商自动更新。
 
 </details>
 
 ---
 
-## 📅 更新日志
+## 安全提醒
 
-### [1.1.0] - 2026-03-01
+你的 API Key 以明文形式保存在本地的 `config/providers.json` 文件中。该文件默认已被 `.gitignore` 排除，所以推送代码时不会泄漏。但请注意不要手动将此文件分享给他人。
 
-#### ✨ 新增
-- **DeepSeek 深度思考解析**: 支持从 DeepSeek R1 模型的返回流中提取深度思考过程（`reasoning_content`），并将其暴露给核心节点专属的 `reasoning` 输出引脚，保证普通文本输出端纯净无杂质。
-- **o1/o3 模型角色兼容**: 为 `o1/o3` 系列等只准许 `user` 角色的严格推理模型集成了降级保护层，在底层自动伪装 `assistant` 确认信息，彻底告别 400 报错。
-#### 🛠 变更
-- **统一核心请求逻辑**: 剥离了原本硬编码的 HTTP 请求，重构出统一的 `api_client.py`，并配备了带指数退避和随机抖动（Jitter）的智能重试机制。
-- **优雅降级不崩盘**: API 节点目前在遇到失败时，会向连线端输出易读的红色结构化错误追踪字符串，而不再直接抛出 Python 异常，防止 ComfyUI 批量执行时整条工作流崩盘。
-- **反爬指纹伪装**: 为纯网络代码加装了浏览器标准的 `User-Agent` 与连接头，成功解决了部分第三方中转平台拦截空 UA 报 Cloudflare 1010 错误的问题。
+---
 
-#### 🐛 修复
-- **修复多轮对话断忆**: 修复了在勾选 `enable_memory` (开启记忆) 时，系统其实并没有存入 `assistant` 机器人历史回复的恶性 Bug。
-- **修复节点参数不对齐 UI**: 摒弃了动态 Widget 组件注入，改用原生的 `<canvas>` 元素直接在前景层重绘 Token 数据，一劳永逸地解决了恼人的节点参数反序列化偏移 Bug。
+## 更新日志
+
+### v1.2.0 — 2026-03-02
+- 内置 **Provider Manager** 可视化管理面板
+- 模型下拉框按供应商动态过滤
+- 自定义弹窗替代浏览器原生 prompt
+- 精简节点接口（移除冗余输入输出参数）
+
+### v1.1.0 — 2026-03-01
+- DeepSeek 深度思考过程提取
+- o1/o3 模型角色兼容
+- 统一 API 客户端（智能重试机制）
+- 优雅降级（不再崩溃工作流）
+- 修复多轮记忆和 Token 显示 Bug
+
+---
+
+## 开源协议
+
+[GNU General Public License v2.0](LICENSE) — 免费使用、修改和分发。修改后的版本需保持开源。
 
 ---
 
 <div align="center">
 
-**如果这个项目对你有帮助，欢迎 Star**
+### 觉得有用？给个 Star 吧！
+
+[![Star History Chart](https://api.star-history.com/svg?repos=HuangYuChuh/ComfyUI-LLMs-Toolkit&type=Date)](https://star-history.com/#HuangYuChuh/ComfyUI-LLMs-Toolkit&Date)
 
 [![GitHub](https://img.shields.io/badge/GitHub-@HuangYuChuh-181717?style=flat-square&logo=github)](https://github.com/HuangYuChuh)
+
+**Made with ❤️ for the ComfyUI community**
 
 </div>

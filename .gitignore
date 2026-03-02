@@ -41,3 +41,6 @@ AI_CHANGELOG_GUIDELINES.md
 # Tests
 tests/
 test_api.py
+
+# User Config (Contains API Keys)
+config/providers.json

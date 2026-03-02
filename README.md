@@ -1,255 +1,198 @@
-# ComfyUI-LLMs-Toolkit
-
 <div align="center">
 
-**Language / 语言切换**
+# ComfyUI-LLMs-Toolkit
 
-[![English](https://img.shields.io/badge/README-English-blue?style=for-the-badge)](readme_en.md)
-[![简体中文](https://img.shields.io/badge/README-简体中文-red?style=for-the-badge)](../README.md)
+![Banner](asset/banner.png)
+
+**Language**
+
+[![English](https://img.shields.io/badge/README-English-blue?style=for-the-badge)](README.md)
+[![简体中文](https://img.shields.io/badge/README-简体中文-red?style=for-the-badge)](README_CN.md)
 
 ---
 
 [![GitHub Stars](https://img.shields.io/github/stars/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=yellow)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=green)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/network)
 [![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
-[![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&color=blue)](../LICENSE)
+[![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&color=blue)](LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&color=orange)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/commits)
 
-**Inject powerful Large Language Models into your ComfyUI workflows!**
-
-*A professional-grade ComfyUI custom node suite supporting world-leading Large Language Models*
+**Bring the power of Large Language Models into your ComfyUI workflows — no GPU needed.**
 
 </div>
 
 ---
 
-## Project Overview
+## What is this?
 
-ComfyUI-LLMs-Toolkit is a high-performance ComfyUI extension designed for AI creators. Through a lightweight API-driven approach, you can easily integrate world-class Large Language Models like DeepSeek, Qwen, GPT, etc., even with limited computational resources, democratizing AI creation.
+ComfyUI-LLMs-Toolkit lets you call mainstream LLMs (like DeepSeek, Qwen, GPT, Moonshot, and many more) directly from your ComfyUI workflows using simple API connections. 
 
-### Why Choose Us?
+Whether you want to generate text, translate content, process images with vision models, or build structured JSON — this toolkit has you covered.
 
-- **Zero Hardware Barrier**: No high-end GPU required, enjoy cutting-edge AI capabilities with just APIs
-- **Global Model Support**: Integrated mainstream LLMs worldwide, one-stop solution
-- **High-Performance Architecture**: Optimized concurrent processing, dramatically improving workflow efficiency
-- **Developer Friendly**: Environment variable configuration, Docker support, developer-first approach
+### Key Features
 
----
-
-## Core Features
-
-### Powerful LLM Ecosystem
-
-| Category | Supported Models | Key Capabilities |
-|----------|------------------|------------------|
-| **Chinese Leaders** | DeepSeek-V3, Qwen-Max, GLM-4 | Chinese understanding, code generation, mathematical reasoning |
-| **International Giants** | GPT-4, Claude-3, Gemini | Multimodal processing, creative writing, complex reasoning |
-| **Professional Vertical** | Doubao, Spark, Moonshot | Dialogue generation, long text, role-playing |
-
-### Technical Highlights
-
-- **Lightning Deployment**: One-click installation, get started in 5 minutes
-- **Concurrency Optimization**: Multi-threading processing, supports batch requests
-- **Security First**: Environment variable configuration, secure API key management
-- **Hot Reload**: Dynamic configuration updates, no need to restart ComfyUI
-- **Smart Caching**: Response caching mechanism, reducing API call costs
-- **Containerized**: Docker support, consistent deployment environment
+- **Built-in Provider Manager** — Manage all your API providers visually from ComfyUI's menu bar. No config files to edit.
+- **12 Providers Pre-configured** — Qwen, DeepSeek, GLM, Doubao, Spark, Moonshot, Baichuan, MiniMax, StepFun, SenseChat, iFlow, ModelScope.
+- **Smart Model Dropdown** — Select a provider, and the model list updates automatically.
+- **Vision Support** — Send images to multimodal LLMs with the Image Preprocessor node.
+- **Won't Crash Your Workflow** — If an API call fails, you get a readable error message instead of a broken workflow.
+- **Multi-turn Memory** — Enable conversation memory for chat-style interactions.
 
 ---
 
-## Quick Start
+## Installation
 
-### System Requirements
+### Option A: ComfyUI Manager (Recommended)
 
-- **Python**: `>= 3.8`
-- **ComfyUI**: Latest version
-- **Memory**: `>= 4GB RAM`
-- **Network**: Stable internet connection
+1. Open **ComfyUI Manager**
+2. Search for `ComfyUI-LLMs-Toolkit`
+3. Click **Install** → **Restart ComfyUI**
 
-### Lightning Installation
+### Option B: Manual Install
 
 ```bash
-# Method 1: Git Clone (Recommended)
 cd ComfyUI/custom_nodes/
 git clone https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit.git
 cd ComfyUI-LLMs-Toolkit
-
-# Install Dependencies
 pip install -r requirements.txt
 ```
 
-```bash
-# Method 2: Docker Deployment
-docker pull your-dockerhub/comfyui-llms-toolkit:latest
-docker run -d --name comfyui-llms -p 8188:8188 your-dockerhub/comfyui-llms-toolkit
-```
-
-### Environment Configuration
-
-#### 1. Create Configuration File
-
-```bash
-# Copy environment variable template
-cp config/env.example .env
-```
-
-#### 2. Configure API Keys
-
-Edit the `.env` file and select the models you want to use:
-
-```bash
-# DeepSeek (Recommended for beginners)
-DEEPSEEK_API_KEY=sk-your_deepseek_key_here
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL_NAME=deepseek-chat
-
-# Qwen (Chinese optimized)
-QWEN_API_KEY=your_qwen_key_here
-QWEN_BASE_URL=https://dashscope.aliyuncs.com/api/v1
-QWEN_MODEL_NAME=qwen-max
-
-# OpenAI GPT (International standard)
-OPENAI_API_KEY=sk-your_openai_key_here
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL_NAME=gpt-4o-mini
-
-# More configurations see config/env.example
-```
-
-#### 3. API Key Acquisition Guide
-
-| Provider | Get Address | Free Credits | Rating |
-|-------------|----------------|-----------------|-----------|
-| **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com/) | ¥500 free credits | ⭐⭐⭐⭐⭐ |
-| **Qwen** | [dashscope.aliyun.com](https://dashscope.aliyun.com/) | 1M tokens/month | ⭐⭐⭐⭐ |
-| **OpenAI** | [platform.openai.com](https://platform.openai.com/) | $5 trial credits | ⭐⭐⭐⭐⭐ |
-| **GLM** | [open.bigmodel.cn](https://open.bigmodel.cn/) | 5M tokens/month | ⭐⭐⭐⭐ |
-
-### First Run
-
-1. **Restart ComfyUI**:
-   ```bash
-   # Restart ComfyUI to load new nodes
-   cd /path/to/ComfyUI
-   python main.py
-   ```
-
-2. **Find Nodes**:
-   - Right-click in ComfyUI interface
-   - Navigate to `Add Node` -> `LLMs Toolkit`
-   - Select the node type you need
-
-3. **Start Creating**:
-   - Drag in LLM nodes
-   - Configure model parameters
-   - Connect inputs and outputs
-   - Enjoy your AI creation journey!
+Then restart ComfyUI.
 
 ---
 
-## Supported Model Matrix
+## Getting Started
 
-### Chinese AI Champions
+### Step 1: Open the Provider Manager
 
-| Model | Provider | Core Advantages | Price Level | Config Prefix |
-|-------|----------|-----------------|-------------|---------------|
-| **DeepSeek-V3** | DeepSeek | Mathematical reasoning, Code generation | Ultra-low | `DEEPSEEK_` |
-| **Qwen-Max** | Alibaba | Multimodal, Chinese optimization | Medium | `QWEN_` |
-| **GLM-4** | Zhipu AI | Logical reasoning, Knowledge Q&A | Low | `GLM_` |
-| **Doubao-Pro** | ByteDance | Dialogue generation, Creative writing | Medium | `DOUBAO_` |
-| **Spark-Max** | iFLYTEK | Language understanding, Text analysis | Low | `SPARK_` |
-| **Moonshot-V1** | Moonshot AI | Long text, Deep understanding | Medium | `MOONSHOT_` |
+After installation, you'll see a **`LLMs_Manager`** button in ComfyUI's top menu bar. Click it to open the settings panel.
 
-### International AI Giants
+### Step 2: Set Up Your Provider
 
-| Model | Provider | Core Advantages | Price Level | Config Prefix |
-|-------|----------|-----------------|-------------|---------------|
-| **GPT-4o** | OpenAI | General intelligence, Multimodal | High | `OPENAI_` |
-| **Claude-3.5** | Anthropic | Safe dialogue, Long text | High | `CLAUDE_` |
-| **Gemini-Pro** | Google | Search enhanced, Multilingual | Medium | `GEMINI_` |
+1. **Pick a provider** from the left sidebar (e.g., DeepSeek)
+2. Enter your **API Key** (get one from the provider's website)
+3. Click **Check API** to make sure it works ✅
+4. Add or edit the **models** you want to use
+5. Click **Save Provider** and toggle **Enable in Nodes** on
+
+### Step 3: Add Nodes to Your Workflow
+
+1. Right-click in ComfyUI → `Add Node` → `🚦ComfyUI_LLMs_Toolkit`
+2. Add an **OpenAI Compatible Adapter** node
+3. Select your provider and model from the dropdowns
+4. Type your prompt, connect the output, and hit **Queue**!
+
+### Where to Get API Keys
+
+| Provider | Website | Free Credits |
+|----------|---------|-------------|
+| **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com/) | ¥500 free |
+| **Qwen** | [dashscope.aliyun.com](https://dashscope.aliyun.com/) | 1M tokens/month |
+| **GLM** | [open.bigmodel.cn](https://open.bigmodel.cn/) | 5M tokens/month |
+| **Moonshot** | [platform.moonshot.cn](https://platform.moonshot.cn/) | Free trial |
+| **OpenAI** | [platform.openai.com](https://platform.openai.com/) | $5 trial |
+
+---
+
+## Available Nodes
+
+### LLM Nodes
+
+| Node | What it does |
+|------|-------------|
+| **OpenAI Compatible Adapter** | The main node — send prompts to any OpenAI-compatible LLM and get text responses. Supports system prompts, multi-turn memory, and vision input. |
+| **LLMs Loader** | Helper node for advanced config (outputs provider settings as a connection). |
+| **LLM Translator** | Quick one-shot translation using any configured LLM. |
+
+### Vision
+
+| Node | What it does |
+|------|-------------|
+| **Image Preprocessor** | Converts ComfyUI images to a format that vision LLMs can understand. Connect it to the adapter node's `prep_img` input. |
+
+### JSON Tools
+
+| Node | What it does |
+|------|-------------|
+| **JSON Builder** (Simple / Medium / Large) | Create structured JSON data with 1, 5, or 10 key-value pairs. |
+| **JSON Combine** | Merge multiple JSON objects into one. |
+| **JSON Extractor** | Pull specific values out of a JSON string. |
+| **JSON Fixer** | Automatically repair broken JSON that LLMs sometimes output. |
+
+### Text Tools
+
+| Node | What it does |
+|------|-------------|
+| **String Template** | Fill in template strings with variables, e.g., `"Hello {name}!"` → `"Hello Alice!"` |
 
 ---
 
 ## FAQ
 
 <details>
-<summary><strong>Q: How to get API keys?</strong></summary>
+<summary><strong>My workflow keeps saying "API Key is missing"</strong></summary>
 
-**A**: All major vendors provide free trial credits:
-- **DeepSeek**: Register and get ¥500 credits, suitable for beginners
-- **Qwen**: Large quota available after Alibaba Cloud account verification
-- **OpenAI**: New users get $5 free credits, requires international payment method
-
-</details>
-
-<details>
-<summary><strong>Q: Does it support local models?</strong></summary>
-
-**A**: Currently mainly supports API calls, local model support is on the development roadmap:
-- **v2.0**: Planned support for Ollama local models
-- **v2.1**: Support for GGUF format models
-- **v3.0**: Support for custom model fine-tuning
+Make sure you've:
+1. Opened the **LLMs_Manager** panel
+2. Selected your provider and entered the API key
+3. Clicked **Save Provider**
+4. Toggled **Enable in Nodes** to ON
 
 </details>
 
 <details>
-<summary><strong>Q: What to do when encountering connection errors?</strong></summary>
+<summary><strong>Can I use local models like Ollama?</strong></summary>
 
-**A**: Common solutions:
-1. **Check network**: Ensure access to corresponding API services
-2. **Verify keys**: Confirm API keys are correct and have balance
-3. **Check configuration**: Confirm BASE_URL format is correct
-4. **View logs**: Check ComfyUI console output
+Yes! Add a **Custom Provider** in the LLMs_Manager, set the Base URL to your local endpoint (e.g., `http://localhost:11434/v1`), and add your model names. Any OpenAI-compatible API works.
+
+</details>
+
+<details>
+<summary><strong>The model dropdown shows wrong models</strong></summary>
+
+Make sure to **refresh the browser** (Cmd+R / Ctrl+R) after making changes in the Provider Manager. The model list updates dynamically based on the selected provider.
 
 </details>
 
 ---
 
-## 📅 Changelog
+## A Note on Security
 
-### [1.1.0] - 2026-03-01
-
-#### ✨ Added
-- **DeepSeek Reasoning Support**: Supported extracting deep thinking processes (`reasoning_content`) from DeepSeek R1 models, exposing it to a dedicated `reasoning` output pin in the generic node.
-- **o1/o3 Model System Role Compatibility**: Integrated a downgrade workaround for strict 'o1/o3' models by spoofing an `assistant` acceptance response.
-#### 🛠 Changed
-- **Shared API Client Refactor**: Extracted HTTP request logic to `api_client.py` for smarter retrying equipped with Exponential Backoff & Jitter.
-- **Graceful Error Degradation**: The API node now outputs readable text error traces instead of throwing Python Exceptions, preventing ComfyUI workflows from halting abruptly.
-- **User-Agent Masquerade**: Added browser-standard `User-Agent` headers to successfully bypass HTTP 403 (Cloudflare Error 1010) on proxy platforms.
-
-#### 🐛 Fixed
-- **Multi-turn Memory Fix**: Fixed `openai_compatible.py` to properly store `assistant` responses when `enable_memory` is toggled on.
-- **Node Parameter Deserialization Bug UI**: Switched from dynamic widgets to naive `<canvas>` element drawings to fix the notorious parameter shift bug caused by `token_usage_display`.
+Your API keys are stored **locally** on your machine in `config/providers.json`. This file is excluded from Git by default, so your keys won't be accidentally shared if you push your code. Just be careful not to share this file manually.
 
 ---
 
-## Open Source License
+## Changelog
 
-This project is licensed under **[GNU General Public License v2.0](../LICENSE)**.
+### v1.2.0 — 2026-03-02
+- Built-in **Provider Manager UI** with Cherry-Studio-style design
+- Dynamic model filtering by provider
+- Custom modal dialogs replacing native browser prompts
+- Simplified node interface (removed redundant custom inputs)
 
-**This means:**
-- **Free to use**: Both personal and commercial use
-- **Free to modify**: You can modify the source code
-- **Free to distribute**: You can distribute original or modified versions
-- **Open source obligation**: Modified versions must be open source
+### v1.1.0 — 2026-03-01
+- DeepSeek reasoning content extraction
+- o1/o3 model system role compatibility
+- Shared API client with smart retry
+- Graceful error handling (no more workflow crashes)
+- Fixed multi-turn memory and token display bugs
+
+---
+
+## License
+
+[GNU General Public License v2.0](LICENSE) — Free to use, modify, and share. Modified versions must stay open source.
 
 ---
 
 <div align="center">
 
-### If this project helps you, please give us a Star!
+### If this project helps you, please give it a Star!
 
 [![Star History Chart](https://api.star-history.com/svg?repos=HuangYuChuh/ComfyUI-LLMs-Toolkit&type=Date)](https://star-history.com/#HuangYuChuh/ComfyUI-LLMs-Toolkit&Date)
 
-**Contact Us**
-
 [![GitHub](https://img.shields.io/badge/GitHub-@HuangYuChuh-181717?style=flat-square&logo=github)](https://github.com/HuangYuChuh)
-[![Email](https://img.shields.io/badge/Email-Contact-red?style=flat-square&logo=gmail)](mailto:your-email@example.com)
 
----
-
-**Made with love for the ComfyUI community**
-
-*Making AI creation simpler, making technology more humane*
+**Made with ❤️ for the ComfyUI community**
 
 </div>

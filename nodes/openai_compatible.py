@@ -1,14 +1,15 @@
-"""
-OpenAI-compatible LLM adapter for ComfyUI.
-
-Unified interface for multiple LLM providers with graceful degradation.
-API calls are handled by the shared LLMClient (api_client.py).
-"""
-
 import time
 import re
 import json as json_lib
-from typing import Optional, List, Dict, Tuple, Any, Union
+import urllib.request
+import urllib.error
+import ssl
+import os
+from typing import Dict, Any, List, Union, Optional
+import base64
+from io import BytesIO
+from PIL import Image
+import torch
 
 try:
     from .api_client import LLMClient, classify_error, log_error
@@ -16,11 +17,27 @@ except ImportError:
     from api_client import LLMClient, classify_error, log_error
 
 
+# Load Providers from JSON config
+_CONFIG_DIR = os.path.join(os.path.dirname(__file__), "..", "config")
+_PROVIDERS_FILE = os.path.join(_CONFIG_DIR, "providers.json")
+
+def _get_providers() -> List[Dict[str, Any]]:
+    try:
+        if os.path.exists(_PROVIDERS_FILE):
+            with open(_PROVIDERS_FILE, "r", encoding="utf-8") as f:
+                data = json_lib.load(f)
+                providers = data.get("providers", [])
+                return [p for p in providers if p.get("enabled", True)]
+    except Exception as e:
+        print(f"[LLMs_Toolkit] Failed to load providers.json: {e}")
+    return []
+
+
 # ─── Message Building ────────────────────────────────────────────────────────
 
 # Providers that require plain string content instead of structured arrays
 _STRING_CONTENT_PROVIDERS = frozenset({
-    "Spark/星火", "Baichuan/百川", "SenseChat/日日新"
+    "spark", "baichuan", "sensechat"
 })
 
 
@@ -88,47 +105,44 @@ class OpenAICompatibleLoader:
 
     @classmethod
     def INPUT_TYPES(cls):
+        providers = _get_providers()
+        
+        provider_names = [f"{p['name']} ({p['id']})" for p in providers]
+        provider_names.append("Custom/手动输入")
+        
+        # We need a massive list of models across all providers to satisfy comfyui's static dropdowns,
+        # but the UI will show/hide them based on provider selection (client-side).
+        # For simplicity in Python, we combine them all + Add Custom option.
+        all_models = ["Custom/手动输入"]
+        for p in providers:
+            for m in p.get("models", []):
+                if m not in all_models:
+                    all_models.append(m)
+                    
         return {
             "required": {
-                "llm_config": ("LLM_CONFIG",),
-                "system_prompt": ("STRING", {
-                    "default": "你是一个AI大模型",
-                    "multiline": True
-                }),
+                "provider": (provider_names, {"default": provider_names[0] if provider_names else "Custom/手动输入"}),
+                "model": (all_models, {"default": all_models[1] if len(all_models) > 1 else "Custom/手动输入"}),
+                "system_prompt": ("STRING", {"default": "你是一个 AI 助手", "multiline": True}),
                 "prompt": ("STRING", {"multiline": True, "default": ""}),
             },
             "optional": {
+                "llm_config": ("LLM_CONFIG",),  # Keep for backward compatibility
                 "prep_img": ("STRING", {"default": "", "forceInput": True}),
-                "temperature": ("FLOAT", {
-                    "default": 0.7,
-                    "min": 0.0,
-                    "max": 2.0
-                }),
-                "max_tokens": ("INT", {
-                    "default": 2048,
-                    "min": 1,
-                    "max": 4096
-                }),
-                "enable_memory": ("BOOLEAN", {
-                    "default": False,
-                    "label": "Enable Memory"
-                }),
-                "seed": ("INT", {
-                    "default": 0,
-                    "min": 0,
-                    "max": 0xffffffffffffffff
-                })
+                "temperature": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 2.0}),
+                "max_tokens": ("INT", {"default": 2048, "min": 1, "max": 4096}),
+                "enable_memory": ("BOOLEAN", {"default": False, "label": "Enable Memory"}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff})
             }
         }
 
     RETURN_TYPES = ("STRING", "STRING")
-    RETURN_NAMES = ("text", "reasoning")
+    RETURN_NAMES = ("response", "reasoning")
     FUNCTION = "generate"
-    CATEGORY = "🚦ComfyUI_LLMs_Toolkit/Generate"
-    OUTPUT_NODE = True
+    CATEGORY = "🚦ComfyUI_LLMs_Toolkit/OpenAI"
 
     def __init__(self):
-        self._conversation_history: List[Dict[str, Any]] = []
+        self.conversation_history: List[Dict[str, Any]] = []
 
     # ── Logging ──────────────────────────────────────────────────────────
 
@@ -170,17 +184,17 @@ class OpenAICompatibleLoader:
     ) -> List[Dict[str, Any]]:
         """Manage conversation history."""
         if not enable:
-            self._conversation_history = []
+            self.conversation_history = []
             return messages
 
         for msg in messages:
             if not any(
                 h["role"] == msg["role"] and h["content"] == msg["content"]
-                for h in self._conversation_history
+                for h in self.conversation_history
             ):
-                self._conversation_history.append(msg)
+                self.conversation_history.append(msg)
 
-        return list(self._conversation_history)
+        return list(self.conversation_history)
 
     # ── Result helpers ───────────────────────────────────────────────────
 
@@ -203,36 +217,75 @@ class OpenAICompatibleLoader:
             "result": (f"[Error] {error_msg}", "")
         }
 
+    def _get_provider_config(self, provider_choice: str) -> Optional[Dict[str, Any]]:
+        """Find the provider config by its dropdown label."""
+        if provider_choice == "Custom/手动输入":
+            return None
+            
+        providers = _get_providers()
+        for p in providers:
+            label = f"{p['name']} ({p['id']})"
+            if label == provider_choice:
+                return p
+        return None
+
     # ── Main entry ───────────────────────────────────────────────────────
 
     def generate(
         self,
-        llm_config: Dict[str, Any],
-        prompt: str,
+        provider: str = "Custom/手动输入",
+        model: str = "Custom/手动输入",
+        prompt: str = "",
+        system_prompt: Optional[str] = None,
+        llm_config: Optional[Dict[str, Any]] = None,
         temperature: float = 0.7,
         max_tokens: int = 2048,
-        system_prompt: Optional[str] = None,
         prep_img: Optional[str] = None,
         enable_memory: bool = False,
         seed: int = 0
     ) -> dict:
         """Main generation entry point with graceful degradation."""
 
-        # ── Extract config ───────────────────────────────────────────
-        base_url = llm_config.get("base_url", "")
-        model = llm_config.get("model", "")
-        api_key = llm_config.get("api_key", "")
-        provider_name = llm_config.get("provider", "Custom")
+        # ── Configuration Resolution ──────────────────────────────────
+        api_key = ""
+        base_url = ""
+        actual_model = model
+        provider_id = "custom"
+        provider_name = "Custom Endpoint"
+        
+        # 1. New Provider Manager Configuration
+        if provider != "Custom/手动输入":
+            p_config = self._get_provider_config(provider)
+            if p_config:
+                provider_id = p_config["id"]
+                provider_name = p_config["name"]
+                api_key = p_config.get("apiKey", "") or api_key
+                base_url = p_config.get("apiHost", "") or base_url
+
+        # 2. Legacy fallback from LLM_CONFIG node if connected
+        if llm_config:
+            api_key = api_key or llm_config.get("api_key", "")
+            base_url = base_url or llm_config.get("base_url", "")
+            actual_model = actual_model or llm_config.get("model", "")
+            provider_id = llm_config.get("provider", provider_id)
+            provider_name = getattr(llm_config, "name", provider_id)
 
         # ── Input validation (fail fast, don't waste API quota) ──────
         if not prompt or not prompt.strip():
             return self._error_result("输入的 Prompt 为空，请填写内容后重试")
         if not api_key or not api_key.strip():
-            return self._error_result("API Key 为空，请在 LLMs Loader 节点中配置")
+            return self._error_result(
+                "API Key is missing. Please configure it in the [⚙️ LLMs] settings "
+                "or provide a Custom API Key."
+            )
         if not base_url or not base_url.strip():
-            return self._error_result("Base URL 为空，请检查服务商配置")
-        if not model or not model.strip():
-            return self._error_result("模型名称为空，请在 LLMs Loader 节点中填写")
+            return self._error_result(
+                "Base URL is missing. Please configure it in the settings."
+            )
+        if not actual_model or not actual_model.strip():
+            return self._error_result(
+                "No Model selected. Please select a model or provide a Custom Model."
+            )
 
         # ── Parse image input ────────────────────────────────────────
         image_input = None
