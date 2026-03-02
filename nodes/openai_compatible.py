@@ -107,7 +107,7 @@ class OpenAICompatibleLoader:
     def INPUT_TYPES(cls):
         providers = _get_providers()
         
-        provider_names = [f"{p['name']} ({p['id']})" for p in providers]
+        provider_names = [p['name'] for p in providers]
         provider_names.append("Custom/手动输入")
         
         # We need a massive list of models across all providers to satisfy comfyui's static dropdowns,
@@ -224,7 +224,7 @@ class OpenAICompatibleLoader:
             
         providers = _get_providers()
         for p in providers:
-            label = f"{p['name']} ({p['id']})"
+            label = p['name']
             if label == provider_choice:
                 return p
         return None

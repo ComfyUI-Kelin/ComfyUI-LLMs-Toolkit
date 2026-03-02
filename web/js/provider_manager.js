@@ -808,8 +808,8 @@ app.registerExtension({
                         return;
                     }
 
-                    // Match provider by exact label "Name (id)"
-                    const found = providersCache.find(p => `${p.name} (${p.id})` === selectedProviderLabel);
+                    // Match provider by name
+                    const found = providersCache.find(p => p.name === selectedProviderLabel);
                     if (found && found.models && found.models.length > 0) {
                         modelWidget.options.values = found.models;
                         if (!found.models.includes(modelWidget.value)) {
