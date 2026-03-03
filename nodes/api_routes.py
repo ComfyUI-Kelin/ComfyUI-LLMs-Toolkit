@@ -164,14 +164,21 @@ async def check_provider(request: web.Request) -> web.Response:
     try:
         import api_client
         client = api_client.LLMClient(base_url=api_host, api_key=api_key)
-        payload = {
-            "model": model or "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": "Hi"}],
-            "max_tokens": 5,
-            "stream": False
-        }
-
-        content, data = client.chat(payload)
+        
+        # 1. Try fetching models (doesn't consume tokens)
+        try:
+            client.list_models()
+        except Exception as e_models:
+            logger.warning(f"Check API: /models failed ({str(e_models)[:100]}), falling back to /chat/completions")
+            
+            # 2. Fallback to a minimal chat completion if /models is not supported
+            payload = {
+                "model": model or "gpt-3.5-turbo",
+                "messages": [{"role": "user", "content": "Hi"}],
+                "max_tokens": 1,
+                "stream": False
+            }
+            client.chat(payload)
 
         return web.json_response({
             "status": "ok",

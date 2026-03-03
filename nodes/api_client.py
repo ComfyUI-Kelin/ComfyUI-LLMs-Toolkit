@@ -201,10 +201,37 @@ class LLMClient:
         timeout: int = 180,
     ):
         self.url = _normalize_url(base_url)
+        self.base_url = self.url.replace("/chat/completions", "")
         self.api_key = api_key
         self.max_retries = max_retries
         self.timeout = timeout
         self._ctx = _get_ssl_context()
+        
+    def _get_headers(self) -> Dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/event-stream",
+            "Connection": "keep-alive"
+        }
+
+    def list_models(self) -> Dict[str, Any]:
+        """
+        Fetch available models using the /models endpoint.
+        Used primarily for connectivity checks without consuming tokens.
+        """
+        headers = self._get_headers()
+        models_url = f"{self.base_url}/models"
+        
+        req = urllib.request.Request(
+            models_url, headers=headers, method="GET"
+        )
+        with urllib.request.urlopen(
+            req, timeout=self.timeout, context=self._ctx
+        ) as resp:
+            body = resp.read().decode("utf-8")
+            return json.loads(body)
 
     def chat(self, payload: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """
@@ -216,13 +243,7 @@ class LLMClient:
         Raises:
             Exception with structured error message if all retries fail.
         """
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/json, text/event-stream",
-            "Connection": "keep-alive"
-        }
+        headers = self._get_headers()
 
         data_bytes = json.dumps(payload).encode("utf-8")
         data_size_mb = len(data_bytes) / (1024 * 1024)
