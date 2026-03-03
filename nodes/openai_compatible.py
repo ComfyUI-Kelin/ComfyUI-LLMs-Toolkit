@@ -108,12 +108,10 @@ class OpenAICompatibleLoader:
         providers = _get_providers()
         
         provider_names = [p['name'] for p in providers]
-        provider_names.append("Custom/手动输入")
+        provider_names.append("LLM_CONFIG (from input)")
         
-        # We need a massive list of models across all providers to satisfy comfyui's static dropdowns,
-        # but the UI will show/hide them based on provider selection (client-side).
-        # For simplicity in Python, we combine them all + Add Custom option.
-        all_models = ["Custom/手动输入"]
+        # Collect all models from providers for the dropdown
+        all_models = ["Custom/手动输入", "LLM_CONFIG (from input)"]
         for p in providers:
             for m in p.get("models", []):
                 if m not in all_models:
@@ -121,10 +119,10 @@ class OpenAICompatibleLoader:
                     
         return {
             "required": {
-                "provider": (provider_names, {"default": provider_names[0] if provider_names else "Custom/手动输入"}),
+                "provider": (provider_names, {"default": provider_names[0] if provider_names else "LLM_CONFIG (from input)"}),
                 "model": (all_models, {"default": all_models[1] if len(all_models) > 1 else "Custom/手动输入"}),
-                "system_prompt": ("STRING", {"default": "你是一个 AI 助手", "multiline": True}),
-                "prompt": ("STRING", {"multiline": True, "default": ""}),
+                "system_prompt": ("STRING", {"default": "You are an AI assistant", "multiline": True}),
+                "prompt": ("STRING", {"multiline": True, "default": "hello"}),
             },
             "optional": {
                 "llm_config": ("LLM_CONFIG",),  # Keep for backward compatibility
@@ -139,7 +137,7 @@ class OpenAICompatibleLoader:
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("response", "reasoning")
     FUNCTION = "generate"
-    CATEGORY = "🚦ComfyUI_LLMs_Toolkit/OpenAI"
+    CATEGORY = "🚦ComfyUI_LLMs_Toolkit/LLM"
 
     def __init__(self):
         self.conversation_history: List[Dict[str, Any]] = []
@@ -219,8 +217,6 @@ class OpenAICompatibleLoader:
 
     def _get_provider_config(self, provider_choice: str) -> Optional[Dict[str, Any]]:
         """Find the provider config by its dropdown label."""
-        if provider_choice == "Custom/手动输入":
-            return None
             
         providers = _get_providers()
         for p in providers:
@@ -233,8 +229,8 @@ class OpenAICompatibleLoader:
 
     def generate(
         self,
-        provider: str = "Custom/手动输入",
-        model: str = "Custom/手动输入",
+        provider: str = "",
+        model: str = "",
         prompt: str = "",
         system_prompt: Optional[str] = None,
         llm_config: Optional[Dict[str, Any]] = None,
@@ -247,28 +243,34 @@ class OpenAICompatibleLoader:
         """Main generation entry point with graceful degradation."""
 
         # ── Configuration Resolution ──────────────────────────────────
+        _FROM_INPUT = "LLM_CONFIG (from input)"
+
         api_key = ""
         base_url = ""
-        actual_model = model
+        actual_model = "" if model in ("Custom/手动输入", _FROM_INPUT, "") else model
         provider_id = "custom"
         provider_name = "Custom Endpoint"
-        
-        # 1. New Provider Manager Configuration
-        if provider != "Custom/手动输入":
+
+        if provider == _FROM_INPUT:
+            # Mode 1: All config comes from LLM_CONFIG input node
+            if not llm_config:
+                return self._error_result(
+                    'Provider is set to "LLM_CONFIG (from input)" but no LLM_CONFIG node is connected. '
+                    'Please connect a LLMs Loader node or select a different provider.'
+                )
+            api_key = llm_config.get("api_key", "")
+            base_url = llm_config.get("base_url", "")
+            actual_model = llm_config.get("model", "") or actual_model
+            provider_id = llm_config.get("provider", "custom")
+            provider_name = provider_id
+        else:
+            # Mode 2: Config from Provider Manager (providers.json)
             p_config = self._get_provider_config(provider)
             if p_config:
                 provider_id = p_config["id"]
                 provider_name = p_config["name"]
                 api_key = p_config.get("apiKey", "") or api_key
                 base_url = p_config.get("apiHost", "") or base_url
-
-        # 2. Legacy fallback from LLM_CONFIG node if connected
-        if llm_config:
-            api_key = api_key or llm_config.get("api_key", "")
-            base_url = base_url or llm_config.get("base_url", "")
-            actual_model = actual_model or llm_config.get("model", "")
-            provider_id = llm_config.get("provider", provider_id)
-            provider_name = getattr(llm_config, "name", provider_id)
 
         # ── Input validation (fail fast, don't waste API quota) ──────
         if not prompt or not prompt.strip():
@@ -300,9 +302,9 @@ class OpenAICompatibleLoader:
                 image_input = stripped
 
         # ── Logging ──────────────────────────────────────────────────
-        print(f"{self.TAG} 使用配置: {provider_name} / {model}")
+        print(f"{self.TAG} 使用配置: {provider_name} / {actual_model}")
         start = self._log_start(
-            provider_name, model, system_prompt, prompt, image_input
+            provider_name, actual_model, system_prompt, prompt, image_input
         )
 
         # ── Build messages ───────────────────────────────────────────
@@ -311,7 +313,7 @@ class OpenAICompatibleLoader:
         messages = self._apply_memory(messages, enable_memory)
 
         # ── o1/o3 System Role Downgrade (Compatibility) ──────────────
-        if re.search(r'o[1-3]', model):
+        if re.search(r'o[1-3]', actual_model):
             for i, msg in enumerate(messages):
                 if msg["role"] == "system":
                     messages[i] = {"role": "user", "content": msg["content"]}
@@ -320,7 +322,7 @@ class OpenAICompatibleLoader:
 
         # ── Build payload (clean, standard fields) ────────────
         payload = {
-            "model": model,
+            "model": actual_model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -372,8 +374,8 @@ class OpenAICompatibleLoader:
 
         except Exception as e:
             elapsed_ms = int((time.time() - start) * 1000)
-            err = classify_error(e, provider_name, model, request_size_mb, elapsed_ms)
-            log_error(err, provider_name, model, request_size_mb, elapsed_ms)
+            err = classify_error(e, provider_name, actual_model, request_size_mb, elapsed_ms)
+            log_error(err, provider_name, actual_model, request_size_mb, elapsed_ms)
 
             # Graceful degradation: return error text instead of crashing
             return self._error_result(err.user_message())
