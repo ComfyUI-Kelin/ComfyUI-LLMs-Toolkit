@@ -250,6 +250,17 @@ class ProviderManager {
             style: { padding: "6px 16px", fontSize: "0.9em", borderRadius: "4px", minHeight: "unset" }
         });
 
+        const usageBtn = $el("button.llm-pm-add-btn", {
+            textContent: "📊 Usage Stats",
+            onclick: () => {
+                this.checkUnsaved(() => {
+                    this.selectedId = "USAGE_STATS";
+                    this.render();
+                });
+            },
+            style: { padding: "6px 16px", fontSize: "0.9em", borderRadius: "4px", minHeight: "unset", marginTop: "10px", background: "transparent", border: "1px dashed var(--border-color)", color: "var(--fg-color)" }
+        });
+
         this.modal = $el("div.comfy-modal.llm-pm-modal", {
             parent: document.body,
             style: { display: "flex", zIndex: 10000 }
@@ -262,7 +273,7 @@ class ProviderManager {
                 $el("div.llm-pm-sidebar", [
                     $el("div.llm-pm-search", [searchInput]),
                     this.sidebarListContainer,
-                    $el("div.llm-pm-sidebar-footer", [addBtn])
+                    $el("div.llm-pm-sidebar-footer", [addBtn, usageBtn])
                 ]),
                 this.contentContainer
             ])
@@ -334,8 +345,55 @@ class ProviderManager {
         });
     }
 
-    renderContent() {
+    async renderContent() {
         this.contentContainer.innerHTML = "";
+
+        if (this.selectedId === "USAGE_STATS") {
+            const loading = $el("div.llm-pm-empty", "Loading usage history...");
+            this.contentContainer.appendChild(loading);
+
+            try {
+                const res = await api.fetchApi("/llm_toolkit/usage");
+                const data = await res.json();
+
+                this.contentContainer.innerHTML = "";
+                this.contentContainer.appendChild($el("h2", { textContent: "API Usage Dashboard", style: { margin: "0 0 20px 0" } }));
+
+                if (!data.usage || data.usage.length === 0) {
+                    this.contentContainer.appendChild($el("div.llm-pm-empty", "No usage data recorded yet. Run a generation first."));
+                    return;
+                }
+
+                const table = $el("table", { style: { width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "0.9em" } });
+                const thead = $el("tr", { style: { borderBottom: "1px solid var(--border-color)", color: "var(--descrip-text)" } });
+                ["Time", "Provider", "Model", "Tokens (In/Out)", "Time (ms)"].forEach(h => {
+                    thead.appendChild($el("th", { style: { padding: "8px" }, textContent: h }));
+                });
+                table.appendChild(thead);
+
+                // Show newest first
+                data.usage.reverse().forEach(row => {
+                    const tr = $el("tr", { style: { borderBottom: "1px solid var(--border-color)" } });
+                    const date = new Date(row.timestamp * 1000).toLocaleString();
+
+                    tr.appendChild($el("td", { style: { padding: "8px" }, textContent: date }));
+                    tr.appendChild($el("td", { style: { padding: "8px", fontWeight: "bold" }, textContent: row.provider }));
+                    tr.appendChild($el("td", { style: { padding: "8px" }, textContent: row.model }));
+                    tr.appendChild($el("td", { style: { padding: "8px" }, textContent: `${row.input_tokens} / ${row.output_tokens}` }));
+                    tr.appendChild($el("td", { style: { padding: "8px", color: "var(--descrip-text)" }, textContent: `${row.elapsed_ms} ms` }));
+                    table.appendChild(tr);
+                });
+
+                const tableContainer = $el("div", { style: { overflowY: "auto", flex: "1" } }, [table]);
+                this.contentContainer.appendChild(tableContainer);
+
+            } catch (e) {
+                console.error(e);
+                this.contentContainer.innerHTML = "";
+                this.contentContainer.appendChild($el("div.llm-pm-empty", "Failed to load usage data. Check logs."));
+            }
+            return;
+        }
 
         const provider = this.providers.find(p => p.id === this.selectedId);
         if (!provider) {

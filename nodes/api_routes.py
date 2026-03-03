@@ -218,6 +218,24 @@ async def check_provider(request: web.Request) -> web.Response:
         }, status=502)
 
 
+async def get_usage_stats(request: web.Request) -> web.Response:
+    """GET /llm_toolkit/usage — Return token usage history."""
+    usage_file = _CONFIG_DIR / "usage.jsonl"
+    stats = []
+    
+    if usage_file.exists():
+        try:
+            with open(usage_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        stats.append(json.loads(line))
+        except Exception as e:
+            logger.error(f"Failed to read usage stats: {e}")
+            
+    # Return last 200 entries to avoid massive payloads
+    return web.json_response({"status": "ok", "usage": stats[-200:]})
+
+
 # ─── Route Registration ─────────────────────────────────────────────────────
 
 def register_routes():
@@ -228,6 +246,7 @@ def register_routes():
         routes = PromptServer.instance.routes
 
         routes.get("/llm_toolkit/providers")(get_providers)
+        routes.get("/llm_toolkit/usage")(get_usage_stats)
         routes.post("/llm_toolkit/providers")(save_provider)
         routes.delete("/llm_toolkit/providers/{id}")(delete_provider)
         routes.post("/llm_toolkit/providers/check")(check_provider)

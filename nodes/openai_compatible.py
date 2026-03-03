@@ -184,6 +184,26 @@ class OpenAICompatibleLoader:
         print(f"   out│ {response[:80].replace(chr(10), ' ')}...")
         print(f"[LLMs_Toolkit] {time.strftime('%H:%M:%S')} ← {fmt(in_tok)}/{fmt(out_tok)}t ({ms}ms)\n")
 
+    @staticmethod
+    def _log_usage(provider_name: str, model: str, in_tok: int, out_tok: int, start: float) -> None:
+        """Append usage stats to config/usage.jsonl"""
+        try:
+            usage_file = os.path.join(_CONFIG_DIR, "usage.jsonl")
+            elapsed_ms = int((time.time() - start) * 1000)
+            record = {
+                "timestamp": int(time.time()),
+                "provider": provider_name,
+                "model": model,
+                "input_tokens": in_tok,
+                "output_tokens": out_tok,
+                "total_tokens": in_tok + out_tok,
+                "elapsed_ms": elapsed_ms
+            }
+            with open(usage_file, "a", encoding="utf-8") as f:
+                f.write(json_lib.dumps(record, ensure_ascii=False) + "\n")
+        except Exception as e:
+            print(f"[LLMs_Toolkit] Failed to write usage log: {e}")
+
     # ── Memory ───────────────────────────────────────────────────────────
 
     def _apply_memory(
@@ -383,6 +403,7 @@ class OpenAICompatibleLoader:
             output_tokens = usage.get("completion_tokens", 0)
 
             self._log_done(response_content, input_tokens, output_tokens, start)
+            self._log_usage(provider_name, actual_model, input_tokens, output_tokens, start)
             
             # Save assistant response to memory if enabled
             if enable_memory and unique_id:
