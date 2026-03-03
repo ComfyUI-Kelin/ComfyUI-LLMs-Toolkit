@@ -2,27 +2,35 @@
   "providers": [
     {
       "id": "qwen",
-      "name": "Qwen/通义千问",
+      "name": "Qwen",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      "models": ["qwen-plus", "qwen-turbo", "qwen-max", "qwen-long"],
+      "models": [
+        "qwen-plus",
+        "qwen-turbo",
+        "qwen-max",
+        "qwen-long"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "deepseek",
-      "name": "DeepSeek/深度求索",
+      "name": "DeepSeek",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.deepseek.com/v1",
-      "models": ["deepseek-chat", "deepseek-reasoner"],
+      "models": [
+        "deepseek-chat",
+        "deepseek-reasoner"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "doubao",
-      "name": "DouBao/豆包",
+      "name": "DouBao",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://ark.cn-beijing.volces.com/api/v3",
@@ -32,77 +40,99 @@
     },
     {
       "id": "spark",
-      "name": "Spark/星火",
+      "name": "Spark",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://spark-api-open.xf-yun.com/v1",
-      "models": ["generalv3.5", "4.0Ultra"],
+      "models": [
+        "generalv3.5",
+        "4.0Ultra"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "glm",
-      "name": "GLM/智谱清言",
+      "name": "GLM",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://open.bigmodel.cn/api/paas/v4/",
-      "models": ["glm-4-plus", "glm-4-flash", "glm-4v-plus"],
+      "models": [
+        "glm-4-plus",
+        "glm-4-flash",
+        "glm-4v-plus"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "moonshot",
-      "name": "Moonshot/月之暗面",
+      "name": "Moonshot",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.moonshot.cn/v1",
-      "models": ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
+      "models": [
+        "moonshot-v1-8k",
+        "moonshot-v1-32k",
+        "moonshot-v1-128k"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "baichuan",
-      "name": "Baichuan/百川",
+      "name": "Baichuan",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.baichuan-ai.com/v1",
-      "models": ["Baichuan4", "Baichuan3-Turbo"],
+      "models": [
+        "Baichuan4",
+        "Baichuan3-Turbo"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "minimax",
-      "name": "MiniMax/MiniMax",
+      "name": "MiniMax",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.minimax.chat/v1",
-      "models": ["MiniMax-Text-01", "abab6.5s-chat"],
+      "models": [
+        "MiniMax-Text-01",
+        "abab6.5s-chat"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "stepfun",
-      "name": "StepFun/阶跃星辰",
+      "name": "StepFun",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.stepfun.com/v1",
-      "models": ["step-1-8k", "step-2-16k"],
+      "models": [
+        "step-1-8k",
+        "step-2-16k"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "sensechat",
-      "name": "SenseChat/日日新",
+      "name": "SenseChat",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api.sensenova.cn/compatible-mode/v1",
-      "models": ["SenseChat-5"],
+      "models": [
+        "SenseChat-5"
+      ],
       "enabled": true,
       "isSystem": true
     },
     {
       "id": "iflow",
-      "name": "iFlow/心流",
+      "name": "iFlow",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://apis.iflow.cn/v1",
@@ -112,11 +142,13 @@
     },
     {
       "id": "modelscope",
-      "name": "ModelScope/魔搭",
+      "name": "ModelScope",
       "type": "openai",
       "apiKey": "",
       "apiHost": "https://api-inference.modelscope.cn/v1",
-      "models": ["Qwen/Qwen2.5-72B-Instruct"],
+      "models": [
+        "Qwen/Qwen2.5-72B-Instruct"
+      ],
       "enabled": true,
       "isSystem": true
     }

@@ -344,45 +344,86 @@ class ProviderManager {
         return JSON.stringify(draftCopy) !== JSON.stringify(origCopy);
     }
 
-    canNavigateAway() {
-        if (this.hasUnsavedChanges()) {
-            return confirm("You have unsaved changes. Discard them?");
+    checkUnsaved(onProceed) {
+        if (!this.hasUnsavedChanges()) {
+            onProceed();
+            return;
         }
-        return true;
+        this.showConfirm(
+            "Unsaved Changes",
+            "You have unsaved changes.\\nAre you sure you want to discard them?",
+            onProceed
+        );
     }
 
+    showDialog(options) {
+        const overlay = $el("div.llm-pm-prompt-overlay");
+        const dialogContent = [$el("h3", options.title)];
+        if (options.message) {
+            dialogContent.push($el("div", {
+                style: { fontSize: "0.9em", color: "var(--descrip-text)", whiteSpace: "pre-wrap", margin: "10px 0", lineHeight: "1.4" },
+                textContent: options.message
+            }));
+        }
 
-    showCustomPrompt(title, defaultValue, callback) {
-        const input = $el("input", { type: "text", value: defaultValue });
-        const cancelBtn = $el("button.cancel", {
-            textContent: "Cancel",
-            onclick: () => document.body.removeChild(overlay)
-        });
-        const confirmBtn = $el("button.confirm", {
-            textContent: "Confirm",
-            onclick: () => {
-                document.body.removeChild(overlay);
-                callback(input.value);
-            }
-        });
+        let inputElement = null;
+        if (options.showInput) {
+            inputElement = $el("input", { type: "text", value: options.inputDefault || "" });
+            dialogContent.push(inputElement);
+        }
 
-        const overlay = $el("div.llm-pm-prompt-overlay", [
-            $el("div.llm-pm-prompt-dialog", [
-                $el("h3", title),
-                input,
-                $el("div.llm-pm-prompt-actions", [cancelBtn, confirmBtn])
-            ])
-        ]);
-
-        // Capture Enter key to confirm
-        input.onkeydown = (e) => {
-            if (e.key === "Enter") confirmBtn.click();
-            if (e.key === "Escape") cancelBtn.click();
+        const closeDialog = () => {
+            if (document.body.contains(overlay)) document.body.removeChild(overlay);
         };
 
+        const actions = [];
+        if (!options.alertOnly) {
+            actions.push($el("button.cancel", {
+                textContent: options.cancelText || "Cancel",
+                onclick: () => {
+                    closeDialog();
+                    if (options.onCancel) options.onCancel();
+                }
+            }));
+        }
+
+        const confirmBtn = $el("button.confirm", {
+            textContent: options.confirmText || "OK",
+            onclick: () => {
+                closeDialog();
+                if (options.onConfirm) options.onConfirm(inputElement ? inputElement.value : null);
+            }
+        });
+        actions.push(confirmBtn);
+
+        dialogContent.push($el("div.llm-pm-prompt-actions", actions));
+        const dialogBox = $el("div.llm-pm-prompt-dialog", dialogContent);
+        overlay.appendChild(dialogBox);
         document.body.appendChild(overlay);
-        input.focus();
-        input.select();
+
+        if (inputElement) {
+            inputElement.onkeydown = (e) => {
+                if (e.key === "Enter") confirmBtn.click();
+                if (e.key === "Escape" && !options.alertOnly) actions[0].click();
+            };
+            inputElement.focus();
+            inputElement.select();
+        }
+    }
+
+    showPrompt(title, defaultValue, callback) {
+        this.showDialog({
+            title: title, showInput: true, inputDefault: defaultValue,
+            confirmText: "Confirm", onConfirm: callback
+        });
+    }
+
+    showAlert(title, message) {
+        this.showDialog({ title: title, message: message, alertOnly: true, confirmText: "OK" });
+    }
+
+    showConfirm(title, message, onConfirm) {
+        this.showDialog({ title: title, message: message, confirmText: "Confirm", onConfirm: onConfirm });
     }
 
     async loadProviders() {
@@ -403,7 +444,7 @@ class ProviderManager {
             this.render();
         } catch (e) {
             console.error("[LLMs_Toolkit] Failed to load providers:", e);
-            alert("加载模型供应商配置失败，请检查终端日志。");
+            this.showAlert("Error", "Failed to load provider configuration. Please check the terminal logs.");
         }
     }
 
@@ -419,32 +460,34 @@ class ProviderManager {
                 this.selectedId = data.provider.id;
                 this.render();
             } else {
-                alert("Save failed: " + data.error);
+                this.showAlert("Save Failed", data.error);
             }
         } catch (e) {
             console.error(e);
-            alert("Save failed.");
+            this.showAlert("Error", "Save failed.");
         }
     }
 
     async deleteProvider(id) {
-        if (!confirm("确定要删除该自定义供应商吗？此操作不可恢复。")) return;
-
-        try {
-            const res = await api.fetchApi(`/llm_toolkit/providers/${id}`, {
-                method: "DELETE"
-            });
-            const data = await res.json();
-            if (data.status === "ok") {
-                if (this.selectedId === id) this.selectedId = null;
-                await this.loadProviders();
-            } else {
-                alert("Delete failed: " + data.error);
+        this.showConfirm(
+            "Delete Provider",
+            "Are you sure you want to delete this custom provider?\\nThis action cannot be undone.",
+            async () => {
+                try {
+                    const res = await api.fetchApi(`/llm_toolkit/providers/${id}`, { method: "DELETE" });
+                    const data = await res.json();
+                    if (data.status === "ok") {
+                        if (this.selectedId === id) this.selectedId = null;
+                        await this.loadProviders();
+                    } else {
+                        this.showAlert("Delete Failed", data.error);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.showAlert("Error", "Delete failed.");
+                }
             }
-        } catch (e) {
-            console.error(e);
-            alert("Delete failed.");
-        }
+        );
     }
 
     async checkConnectivity(apiHost, apiKey, model) {
@@ -459,13 +502,13 @@ class ProviderManager {
             const data = await res.json();
 
             if (data.status === "ok") {
-                alert("✅ 连接成功! API Key 与 Base URL 配置正确。");
+                this.showAlert("Success", "✅ Connection successful! API Key and Base URL are configured correctly.");
             } else {
-                alert("❌ 连接失败:\n" + data.message);
+                this.showAlert("Connection Failed", "❌ " + data.message);
             }
         } catch (e) {
             console.error(e);
-            alert("❌ 请求发送失败，可能跨域或网络异常。");
+            this.showAlert("Error", "❌ Request failed. Network error or CORS issue.");
         } finally {
             const btn = document.getElementById("pm-check-btn");
             if (btn) btn.textContent = "Check";
@@ -486,11 +529,12 @@ class ProviderManager {
         const closeBtn = $el("span.llm-pm-close", {
             innerHTML: "&times;",
             onclick: () => {
-                if (!this.canNavigateAway()) return;
-                this.modal.style.display = "none";
-                this.currentDraft = null;
-                // Optionally reload graph nodes to catch updated config
-                app.graph.setDirtyCanvas(true);
+                this.checkUnsaved(() => {
+                    this.modal.style.display = "none";
+                    this.currentDraft = null;
+                    // Optionally reload graph nodes to catch updated config
+                    app.graph.setDirtyCanvas(true);
+                });
             }
         });
 
@@ -506,8 +550,7 @@ class ProviderManager {
         const addBtn = $el("button.llm-pm-add-btn", {
             textContent: "+ Custom Provider",
             onclick: () => {
-                if (!this.canNavigateAway()) return;
-                this.createNewProvider();
+                this.checkUnsaved(() => this.createNewProvider());
             },
             style: { padding: "6px 16px", fontSize: "0.9em", borderRadius: "4px", minHeight: "unset" }
         });
@@ -582,9 +625,10 @@ class ProviderManager {
             const item = $el("div.llm-pm-item" + (isActive ? ".active" : ""), {
                 onclick: () => {
                     if (this.selectedId === p.id) return;
-                    if (!this.canNavigateAway()) return;
-                    this.selectedId = p.id;
-                    this.render();
+                    this.checkUnsaved(() => {
+                        this.selectedId = p.id;
+                        this.render();
+                    });
                 }
             }, [
                 $el("span", p.name),
@@ -700,7 +744,7 @@ class ProviderManager {
             modelsContainer.appendChild($el("span.llm-pm-model-add", {
                 textContent: "+ Add Model",
                 onclick: () => {
-                    this.showCustomPrompt("Enter Model Name (e.g. gpt-4o):", "", (name) => {
+                    this.showPrompt("Enter Model Name (e.g. gpt-4o):", "", (name) => {
                         if (name && name.trim()) {
                             draft.models.push(name.trim());
                             renderModels();
