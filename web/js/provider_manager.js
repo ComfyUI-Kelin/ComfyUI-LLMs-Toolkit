@@ -77,12 +77,14 @@ const I18N_DICT = {
         saved: "✅ Saved!",
         delete: "Delete",
         preview: "Preview: ",
-        lang_switch: "中"
+        lang_switch: "中",
+        menu_button: "LLM Manager",
+        menu_tooltip: "Manage LLM API Providers & Model Config"
     },
     zh: {
         manager_title: "LLMs 模型管家",
         unsaved_title: "未保存更改",
-        unsaved_msg: "你有未保存的更改。\n确定要放弃它们吗？",
+        unsaved_msg: "你有未保存的更改。\\n确定要放弃它们吗？",
         cancel: "取消",
         ok: "好的",
         confirm: "确认",
@@ -91,7 +93,7 @@ const I18N_DICT = {
         save_failed: "保存失败",
         save_err: "保存配置失败。",
         delete_title: "删除供应商",
-        delete_msg: "确定要删除这个自定义供应商吗？\n此操作无法撤销。",
+        delete_msg: "确定要删除这个自定义供应商吗？\\n此操作无法撤销。",
         delete_failed: "删除失败",
         delete_err: "删除供应商失败。",
         checking: "检测中...",
@@ -139,7 +141,9 @@ const I18N_DICT = {
         saved: "✅ 已保存！",
         delete: "删除",
         preview: "预览: ",
-        lang_switch: "EN"
+        lang_switch: "EN",
+        menu_button: "LLM 模型管家",
+        menu_tooltip: "管理 LLM API 供应商与模型配置"
     }
 };
 
@@ -455,7 +459,7 @@ class ProviderManager {
             style: { display: "flex", zIndex: 10000 }
         }, [
             $el("div.llm-pm-header", [
-                
+
                 $el("h2.llm-pm-title", [
                     t("manager_title"),
                     $el("button", {
@@ -464,10 +468,19 @@ class ProviderManager {
                         onclick: () => {
                             const current = getLang();
                             localStorage.setItem("llm_pm_lang", current === "zh" ? "en" : "zh");
+
                             // Re-render UI
                             this.modal.remove();
                             this.modal = null;
                             this.show();
+
+                            // Update the main menu button if possible
+                            const menuBtn = document.querySelector('.comfyui-button[title*="Manage LLM API"], .comfyui-button[title*="管理 LLM API"]');
+                            if (menuBtn) {
+                                const contentSpan = menuBtn.querySelector('.comfyui-button-content');
+                                if (contentSpan) contentSpan.textContent = t("menu_button");
+                                menuBtn.title = t("menu_tooltip");
+                            }
                         },
                         style: {
                             marginLeft: "12px",
@@ -912,8 +925,8 @@ app.registerExtension({
             const llmGroup = new ComfyButtonGroup(
                 new ComfyButton({
                     icon: "robot",
-                    content: "LLMs_Manager",
-                    tooltip: "Manage LLM API Providers & Model Config",
+                    content: t("menu_button"),
+                    tooltip: t("menu_tooltip"),
                     action: () => manager.show(),
                     classList: "comfyui-button comfyui-menu-mobile-collapse primary"
                 }).element
@@ -924,8 +937,8 @@ app.registerExtension({
         } catch (e) {
             console.warn("[LLMs_Toolkit] New-style menu API not available, using fallback.", e);
             const floatBtn = $el("button", {
-                textContent: "LLMs_Manager",
-                title: "Manage LLM API Providers & Models",
+                textContent: t("menu_button"),
+                title: t("menu_tooltip"),
                 onclick: () => manager.show(),
                 style: {
                     position: "fixed",
