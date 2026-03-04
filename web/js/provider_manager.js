@@ -283,7 +283,7 @@ class ProviderManager {
             style: { display: "flex", zIndex: 10000 }
         }, [
             $el("div.llm-pm-header", [
-                $el("h2.llm-pm-title", "⚙️ LLM Provider & Model Manager"),
+                $el("h2.llm-pm-title", "LLMs Toolkit Manager"),
                 closeBtn
             ]),
             $el("div.llm-pm-body", [
