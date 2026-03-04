@@ -241,7 +241,7 @@
 
 .llm-pm-add-btn:hover {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0.12) 100%) !important;
-    box-shadow: 0 0 16px var(--glass-accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
