@@ -202,10 +202,18 @@ class ProviderManager {
     }
 
     async checkConnectivity(apiHost, apiKey, model) {
-        try {
-            const btn = document.getElementById("pm-check-btn");
-            if (btn) btn.textContent = "Checking...";
+        const btn = document.getElementById("pm-check-btn");
+        if (!btn) return;
 
+        const originalHtml = btn.innerHTML;
+        const originalBg = btn.style.background;
+        const originalColor = btn.style.color;
+
+        // Loading State
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="llm-pm-spin" style="margin-right:6px"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Checking...`;
+        btn.disabled = true;
+
+        try {
             const res = await api.fetchApi("/llm_toolkit/providers/check", {
                 method: "POST",
                 body: JSON.stringify({ apiHost, apiKey, model })
@@ -213,16 +221,39 @@ class ProviderManager {
             const data = await res.json();
 
             if (data.status === "ok") {
-                this.showAlert("Success", "✅ Connection successful! API Key and Base URL are configured correctly.");
+                // Success State
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"></polyline></svg> Connected!`;
+                btn.style.background = "rgba(52, 211, 153, 0.15)";
+                btn.style.color = "var(--glass-success)";
+                btn.style.borderColor = "var(--glass-success)";
+                btn.style.boxShadow = "0 0 12px var(--glass-success-glow)";
             } else {
-                this.showAlert("Connection Failed", "❌ " + data.message);
+                // Error State
+                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Failed`;
+                btn.style.background = "rgba(248, 113, 113, 0.15)";
+                btn.style.color = "var(--glass-danger)";
+                btn.style.borderColor = "var(--glass-danger)";
+                btn.style.boxShadow = "0 0 12px rgba(248, 113, 113, 0.3)";
+                console.warn("[LLMs Toolkit] Connect Error: ", data.message);
+
+                // Still show the alert for the specific error message
+                setTimeout(() => this.showAlert("Connection Failed", "❌ " + data.message), 100);
             }
         } catch (e) {
             console.error(e);
-            this.showAlert("Error", "❌ Request failed. Network error or CORS issue.");
+            btn.innerHTML = `⚠️ Network Error`;
+            btn.style.color = "#fbbf24";
+            setTimeout(() => this.showAlert("Error", "❌ Request failed. Network error or CORS issue."), 100);
         } finally {
-            const btn = document.getElementById("pm-check-btn");
-            if (btn) btn.textContent = "Check";
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.style.background = originalBg;
+                btn.style.color = originalColor;
+                btn.style.borderColor = "";
+                btn.style.boxShadow = "";
+                btn.disabled = false;
+            }, 3000);
         }
     }
 
@@ -501,36 +532,66 @@ class ProviderManager {
             type: "password",
             value: draft.apiKey,
             placeholder: "sk-...",
+            style: { paddingRight: "40px" }, // Make room for the absolute eye icon
             oninput: (e) => draft.apiKey = e.target.value
         });
 
-        const toggleVisibilityBtn = $el("button", {
+        const toggleVisibilityBtn = $el("div", {
             innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
             onclick: () => {
                 if (keyInput.type === "password") {
                     keyInput.type = "text";
                     toggleVisibilityBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+                    toggleVisibilityBtn.style.color = "var(--glass-text-primary)";
                 } else {
                     keyInput.type = "password";
                     toggleVisibilityBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+                    toggleVisibilityBtn.style.color = "var(--glass-text-tertiary)";
                 }
             },
             title: "Toggle Visibility",
             style: {
-                padding: "4px 8px", fontSize: "0.85em", borderRadius: "4px", minHeight: "unset",
-                display: "inline-flex", alignItems: "center", background: "transparent", color: "var(--descrip-text)", border: "1px solid var(--border-color)", cursor: "pointer"
+                position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--glass-text-tertiary)", cursor: "pointer", transition: "var(--glass-transition)"
             }
         });
 
+        toggleVisibilityBtn.onmouseenter = () => toggleVisibilityBtn.style.color = "var(--glass-text-primary)";
+        toggleVisibilityBtn.onmouseleave = () => {
+            if (keyInput.type === "password") toggleVisibilityBtn.style.color = "var(--glass-text-tertiary)";
+        };
+
+        const keyInputWrapper = $el("div", {
+            style: { position: "relative", flex: "1", display: "flex" }
+        }, [keyInput, toggleVisibilityBtn]);
+
         const checkBtn = $el("button", {
             id: "pm-check-btn",
-            innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 2l.117 .007a1 1 0 0 1 .876 .876l.007 .117v4l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.117 .007a1 1 0 0 1 .876 .876l.007 .117v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-10a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-14a3 3 0 0 1 2.824 -2.995l.176 -.005zm3.707 10.293a1 1 0 0 0 -1.414 0l-3.293 3.292l-1.293 -1.292a1 1 0 1 0 -1.414 1.414l2 2a1 1 0 0 0 1.414 0l4 -4a1 1 0 0 0 0 -1.414m-.707 -9.294l4 4.001h-4z" /></svg> Check API`,
+            innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Check API`,
             onclick: () => this.checkConnectivity(draft.apiHost, draft.apiKey, draft.models[0] || ""),
             style: {
-                padding: "4px 12px", fontSize: "0.85em", borderRadius: "4px", minHeight: "unset",
-                display: "inline-flex", alignItems: "center"
+                padding: "8px 16px", fontSize: "0.88em", borderRadius: "10px", minHeight: "unset",
+                display: "inline-flex", alignItems: "center", cursor: "pointer",
+                background: "rgba(255,255,255,0.06)", color: "var(--glass-text-primary)",
+                border: "1px solid var(--glass-border-light)", transition: "var(--glass-transition)"
             }
         });
+
+        checkBtn.onmouseenter = () => {
+            if (!checkBtn.disabled) {
+                checkBtn.style.background = "rgba(255,255,255,0.12)";
+                checkBtn.style.borderColor = "rgba(255,255,255,0.2)";
+                checkBtn.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+            }
+        };
+        checkBtn.onmouseleave = () => {
+            if (!checkBtn.disabled) {
+                checkBtn.style.background = "rgba(255,255,255,0.06)";
+                checkBtn.style.borderColor = "var(--glass-border-light)";
+                checkBtn.style.boxShadow = "none";
+            }
+        };
 
         // -- URL
         const urlInput = $el("input", {
@@ -651,7 +712,7 @@ class ProviderManager {
 
             $el("div.llm-pm-field", [
                 $el("label", "API Key"),
-                $el("div.llm-pm-input-group", [keyInput, toggleVisibilityBtn, checkBtn]),
+                $el("div.llm-pm-input-group", [keyInputWrapper, checkBtn]),
                 $el("div.llm-pm-field-hint", "Keys are stored locally in config/providers.json in plaintext.")
             ]),
 

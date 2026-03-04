@@ -326,10 +326,25 @@
 .llm-pm-input-group {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
 .llm-pm-input-group input {
     flex: 1;
+}
+
+@keyframes llm-pm-spin-anim {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.llm-pm-spin {
+    animation: llm-pm-spin-anim 1s linear infinite;
 }
 
 /* ============================================================
