@@ -227,9 +227,10 @@
 
 .llm-pm-add-btn {
     width: 100%;
-    background: rgba(99, 102, 241, 0.12) !important;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(99, 102, 241, 0.05) 100%) !important;
     color: var(--glass-accent-hover) !important;
-    border: 1px solid rgba(99, 102, 241, 0.2) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(99, 102, 241, 0.25);
     border-radius: var(--glass-radius-xs) !important;
     padding: 8px 0 !important;
     font-size: 0.85em !important;
@@ -239,9 +240,8 @@
 }
 
 .llm-pm-add-btn:hover {
-    background: rgba(99, 102, 241, 0.2) !important;
-    border-color: rgba(99, 102, 241, 0.35) !important;
-    box-shadow: 0 0 16px var(--glass-accent-glow);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0.12) 100%) !important;
+    box-shadow: 0 0 16px var(--glass-accent-glow), inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
