@@ -180,7 +180,7 @@ pip install -r requirements.txt
 
 ## 开源协议
 
-[GNU General Public License v2.0](LICENSE) — 免费使用、修改和分发。修改后的版本需保持开源。
+[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE) — 免费使用、修改和分发。如果你修改或在网络服务中使用了本代码，必须基于相同协议开源你的完整源代码。
 
 ---
 

@@ -181,7 +181,7 @@ Your API keys are stored **locally** on your machine in `config/providers.json`.
 
 ## License
 
-[GNU General Public License v2.0](LICENSE) — Free to use, modify, and share. Modified versions must stay open source.
+[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE) — Free to use, modify, and share. If you modify or include this code in a service over a network, you must make the complete source code of your changes open and available under the same license.
 
 ---
 
