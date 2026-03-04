@@ -175,7 +175,6 @@
     justify-content: space-between;
     align-items: center;
     color: var(--glass-text-primary);
-    border-left: 3px solid transparent;
     border-radius: var(--glass-radius-xs);
     margin-bottom: 2px;
     transition: var(--glass-transition);
@@ -188,7 +187,6 @@
 
 .llm-pm-item.active {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.04) 100%);
-    border-left-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
     color: #fff;
     font-weight: 500;
