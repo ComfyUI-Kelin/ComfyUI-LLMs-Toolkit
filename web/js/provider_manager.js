@@ -463,8 +463,8 @@ class ProviderManager {
                 $el("h2.llm-pm-title", [
                     t("manager_title"),
                     $el("button", {
-                        textContent: t("lang_switch"),
-                        title: "Switch Language",
+                        innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-language"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629" /><path d="M4 6.371h7" /><path d="M5 9c0 2.144 2.252 3.908 6 4" /><path d="M12 20l4 -9l4 9" /><path d="M19.1 18h-6.2" /><path d="M6.694 3 l.793 .582" /></svg>`,
+                        title: getLang() === "zh" ? "Switch to English" : "切换至中文",
                         onclick: () => {
                             const current = getLang();
                             localStorage.setItem("llm_pm_lang", current === "zh" ? "en" : "zh");
@@ -484,13 +484,16 @@ class ProviderManager {
                         },
                         style: {
                             marginLeft: "12px",
-                            padding: "2px 8px",
-                            fontSize: "0.6em",
-                            borderRadius: "12px",
-                            background: "rgba(255,255,255,0.1)",
-                            border: "1px solid rgba(255,255,255,0.2)",
+                            padding: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "8px",
+                            background: "rgba(255,255,255,0.08)",
+                            border: "1px solid rgba(255,255,255,0.15)",
                             color: "var(--glass-text-secondary)",
-                            cursor: "pointer"
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
                         }
                     })
                 ]),
