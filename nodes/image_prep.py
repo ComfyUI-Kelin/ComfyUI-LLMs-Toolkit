@@ -5,7 +5,7 @@ from PIL import Image
 from typing import Optional, Union
 import torch
 
-class ImagePreprocessor:
+class ImagePrep:
     """
     Custom node for preprocessing images before passing them to LLMs.
     """
@@ -108,5 +108,5 @@ class ImagePreprocessor:
 
 
 # Register the node with ComfyUI
-NODE_CLASS_MAPPINGS = {"ImagePreprocessor": ImagePreprocessor}
-NODE_DISPLAY_NAME_MAPPINGS = {"ImagePreprocessor": "Image Preprocessor"}
+NODE_CLASS_MAPPINGS = {"ImagePrep": ImagePrep}
+NODE_DISPLAY_NAME_MAPPINGS = {"ImagePrep": "Image Prep"}

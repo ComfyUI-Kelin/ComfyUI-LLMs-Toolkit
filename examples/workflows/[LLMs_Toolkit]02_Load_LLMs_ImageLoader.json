@@ -1,1 +1,645 @@
-{"id":"dedc19ce-d33c-4a8b-b672-c75ec2d1fc9f","revision":0,"last_node_id":60,"last_link_id":69,"nodes":[{"id":55,"type":"ImagePreprocessor","pos":[1070,300],"size":[277.5152006264684,142],"flags":{},"order":2,"mode":0,"inputs":[{"localized_name":"image","name":"image","type":"IMAGE","link":66},{"localized_name":"image_2","name":"image_2","shape":7,"type":"IMAGE","link":null},{"localized_name":"image_3","name":"image_3","shape":7,"type":"IMAGE","link":null},{"localized_name":"image_4","name":"image_4","shape":7,"type":"IMAGE","link":null},{"localized_name":"format","name":"format","shape":7,"type":"COMBO","widget":{"name":"format"},"link":null},{"localized_name":"quality","name":"quality","shape":7,"type":"COMBO","widget":{"name":"quality"},"link":null}],"outputs":[{"localized_name":"processed_image","name":"processed_image","type":"STRING","links":[64,67]}],"properties":{"aux_id":"HuangYuChuh/ComfyUI-LLMs-Toolkit","ver":"d21b7049175bf69f8f3548215b0503a7f57b4ec1","Node name for S&R":"ImagePreprocessor","widget_ue_connectable":{}},"widgets_values":["PNG","High"]},{"id":57,"type":"LoadImage","pos":[780,300],"size":[270,314],"flags":{},"order":0,"mode":0,"inputs":[{"localized_name":"图像","name":"image","type":"COMBO","widget":{"name":"image"},"link":null},{"localized_name":"选择文件上传","name":"upload","type":"IMAGEUPLOAD","widget":{"name":"upload"},"link":null}],"outputs":[{"localized_name":"图像","name":"IMAGE","type":"IMAGE","links":[66]},{"localized_name":"遮罩","name":"MASK","type":"MASK","links":null}],"properties":{"cnr_id":"comfy-core","ver":"0.11.1","Node name for S&R":"LoadImage","widget_ue_connectable":{}},"widgets_values":["example.png","image"]},{"id":52,"type":"OpenAICompatibleLoader","pos":[1403.5250350062945,-42.10156782373913],"size":[400,330],"flags":{},"order":3,"mode":0,"inputs":[{"localized_name":"llm_config","name":"llm_config","shape":7,"type":"LLM_CONFIG","link":61},{"localized_name":"prep_img","name":"prep_img","shape":7,"type":"STRING","link":64},{"localized_name":"provider","name":"provider","type":"COMBO","widget":{"name":"provider"},"link":null},{"localized_name":"model","name":"model","type":"COMBO","widget":{"name":"model"},"link":null},{"localized_name":"system_prompt","name":"system_prompt","type":"STRING","widget":{"name":"system_prompt"},"link":null},{"localized_name":"prompt","name":"prompt","type":"STRING","widget":{"name":"prompt"},"link":null},{"localized_name":"temperature","name":"temperature","shape":7,"type":"FLOAT","widget":{"name":"temperature"},"link":null},{"localized_name":"max_tokens","name":"max_tokens","shape":7,"type":"INT","widget":{"name":"max_tokens"},"link":null},{"localized_name":"enable_memory","name":"enable_memory","shape":7,"type":"BOOLEAN","widget":{"name":"enable_memory"},"link":null},{"localized_name":"seed","name":"seed","shape":7,"type":"INT","widget":{"name":"seed"},"link":null}],"outputs":[{"localized_name":"response","name":"response","type":"STRING","links":[62]},{"localized_name":"reasoning","name":"reasoning","type":"STRING","links":null}],"properties":{"aux_id":"HuangYuChuh/ComfyUI-LLMs-Toolkit","ver":"d21b7049175bf69f8f3548215b0503a7f57b4ec1","Node name for S&R":"OpenAICompatibleLoader","widget_ue_connectable":{}},"widgets_values":["LLM_CONFIG (from input)","Custom/手动输入","You are an AI assistant","Describe the content shown in the image.",0.7,2048,false,897717331261300,"randomize"]},{"id":53,"type":"OpenAICompatibleLoader","pos":[1408.9781023971639,426.3476965506912],"size":[400,330],"flags":{},"order":4,"mode":0,"inputs":[{"localized_name":"llm_config","name":"llm_config","shape":7,"type":"LLM_CONFIG","link":null},{"localized_name":"prep_img","name":"prep_img","shape":7,"type":"STRING","link":67},{"localized_name":"provider","name":"provider","type":"COMBO","widget":{"name":"provider"},"link":null},{"localized_name":"model","name":"model","type":"COMBO","widget":{"name":"model"},"link":null},{"localized_name":"system_prompt","name":"system_prompt","type":"STRING","widget":{"name":"system_prompt"},"link":null},{"localized_name":"prompt","name":"prompt","type":"STRING","widget":{"name":"prompt"},"link":null},{"localized_name":"temperature","name":"temperature","shape":7,"type":"FLOAT","widget":{"name":"temperature"},"link":null},{"localized_name":"max_tokens","name":"max_tokens","shape":7,"type":"INT","widget":{"name":"max_tokens"},"link":null},{"localized_name":"enable_memory","name":"enable_memory","shape":7,"type":"BOOLEAN","widget":{"name":"enable_memory"},"link":null},{"localized_name":"seed","name":"seed","shape":7,"type":"INT","widget":{"name":"seed"},"link":null}],"outputs":[{"localized_name":"response","name":"response","type":"STRING","links":[63]},{"localized_name":"reasoning","name":"reasoning","type":"STRING","links":null}],"properties":{"aux_id":"HuangYuChuh/ComfyUI-LLMs-Toolkit","ver":"d21b7049175bf69f8f3548215b0503a7f57b4ec1","Node name for S&R":"OpenAICompatibleLoader","widget_ue_connectable":{}},"widgets_values":["iFlow/心流","qwen3-vl-plus","You are an AI assistant","Describe the content shown in the image.",0.7,2048,false,653024945828893,"randomize"]},{"id":54,"type":"PreviewAny","pos":[1873.9763023301216,428.97649600749054],"size":[360.79388327976494,380.3659063173028],"flags":{},"order":6,"mode":0,"inputs":[{"localized_name":"源","name":"source","type":"*","link":63}],"outputs":[],"properties":{"cnr_id":"comfy-core","ver":"0.11.1","Node name for S&R":"PreviewAny","widget_ue_connectable":{}},"widgets_values":[null,null,false]},{"id":44,"type":"PreviewAny","pos":[1872.2970877854261,-42.10156782373913],"size":[364.6867579012669,369.4525484040341],"flags":{},"order":5,"mode":0,"inputs":[{"localized_name":"源","name":"source","type":"*","link":62}],"outputs":[],"properties":{"cnr_id":"comfy-core","ver":"0.11.1","Node name for S&R":"PreviewAny","widget_ue_connectable":{}},"widgets_values":[null,null,false]},{"id":42,"type":"LLM_Loader","pos":[1082.696726426485,-41.53421816001226],"size":[272.21246232992235,130],"flags":{},"order":1,"mode":0,"inputs":[{"localized_name":"provider","name":"provider","type":"COMBO","widget":{"name":"provider"},"link":null},{"localized_name":"model","name":"model","type":"STRING","widget":{"name":"model"},"link":null},{"localized_name":"api_key","name":"api_key","type":"STRING","widget":{"name":"api_key"},"link":null},{"localized_name":"custom_base_url","name":"custom_base_url","shape":7,"type":"STRING","widget":{"name":"custom_base_url"},"link":null}],"outputs":[{"localized_name":"llm_config","name":"llm_config","type":"LLM_CONFIG","links":[61]}],"properties":{"aux_id":"HuangYuChuh/ComfyUI-LLMs-Toolkit","ver":"d21b7049175bf69f8f3548215b0503a7f57b4ec1","Node name for S&R":"LLM_Loader","widget_ue_connectable":{}},"widgets_values":["iFlow/心流","qwen3-vl-plus","",""]}],"links":[[61,42,0,52,0,"LLM_CONFIG"],[62,52,0,44,0,"STRING"],[63,53,0,54,0,"STRING"],[64,55,0,52,1,"STRING"],[66,57,0,55,0,"IMAGE"],[67,55,0,53,1,"STRING"]],"groups":[],"config":{},"extra":{"ds":{"scale":0.6567669330320945,"offset":[-197.3085332522095,303.1699884121811]},"workflowRendererVersion":"LG","ue_links":[],"links_added_by_ue":[]},"version":0.4}
+{
+    "id": "dedc19ce-d33c-4a8b-b672-c75ec2d1fc9f",
+    "revision": 0,
+    "last_node_id": 60,
+    "last_link_id": 69,
+    "nodes": [
+        {
+            "id": 55,
+            "type": "ImagePrep",
+            "pos": [
+                1070,
+                300
+            ],
+            "size": [
+                277.5152006264684,
+                142
+            ],
+            "flags": {},
+            "order": 2,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "image",
+                    "name": "image",
+                    "type": "IMAGE",
+                    "link": 66
+                },
+                {
+                    "localized_name": "image_2",
+                    "name": "image_2",
+                    "shape": 7,
+                    "type": "IMAGE",
+                    "link": null
+                },
+                {
+                    "localized_name": "image_3",
+                    "name": "image_3",
+                    "shape": 7,
+                    "type": "IMAGE",
+                    "link": null
+                },
+                {
+                    "localized_name": "image_4",
+                    "name": "image_4",
+                    "shape": 7,
+                    "type": "IMAGE",
+                    "link": null
+                },
+                {
+                    "localized_name": "format",
+                    "name": "format",
+                    "shape": 7,
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "format"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "quality",
+                    "name": "quality",
+                    "shape": 7,
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "quality"
+                    },
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "localized_name": "processed_image",
+                    "name": "processed_image",
+                    "type": "STRING",
+                    "links": [
+                        64,
+                        67
+                    ]
+                }
+            ],
+            "properties": {
+                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
+                "Node name for S&R": "ImagePrep",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                "PNG",
+                "High"
+            ]
+        },
+        {
+            "id": 57,
+            "type": "LoadImage",
+            "pos": [
+                780,
+                300
+            ],
+            "size": [
+                270,
+                314
+            ],
+            "flags": {},
+            "order": 0,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "图像",
+                    "name": "image",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "image"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "选择文件上传",
+                    "name": "upload",
+                    "type": "IMAGEUPLOAD",
+                    "widget": {
+                        "name": "upload"
+                    },
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "localized_name": "图像",
+                    "name": "IMAGE",
+                    "type": "IMAGE",
+                    "links": [
+                        66
+                    ]
+                },
+                {
+                    "localized_name": "遮罩",
+                    "name": "MASK",
+                    "type": "MASK",
+                    "links": null
+                }
+            ],
+            "properties": {
+                "cnr_id": "comfy-core",
+                "ver": "0.11.1",
+                "Node name for S&R": "LoadImage",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                "example.png",
+                "image"
+            ]
+        },
+        {
+            "id": 52,
+            "type": "OpenAICompatibleLoader",
+            "pos": [
+                1403.5250350062945,
+                -42.10156782373913
+            ],
+            "size": [
+                400,
+                330
+            ],
+            "flags": {},
+            "order": 3,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "llm_config",
+                    "name": "llm_config",
+                    "shape": 7,
+                    "type": "LLM_CONFIG",
+                    "link": 61
+                },
+                {
+                    "localized_name": "prep_img",
+                    "name": "prep_img",
+                    "shape": 7,
+                    "type": "STRING",
+                    "link": 64
+                },
+                {
+                    "localized_name": "provider",
+                    "name": "provider",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "provider"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "model",
+                    "name": "model",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "model"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "system_prompt",
+                    "name": "system_prompt",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "system_prompt"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "prompt",
+                    "name": "prompt",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "prompt"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "temperature",
+                    "name": "temperature",
+                    "shape": 7,
+                    "type": "FLOAT",
+                    "widget": {
+                        "name": "temperature"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "max_tokens",
+                    "name": "max_tokens",
+                    "shape": 7,
+                    "type": "INT",
+                    "widget": {
+                        "name": "max_tokens"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "enable_memory",
+                    "name": "enable_memory",
+                    "shape": 7,
+                    "type": "BOOLEAN",
+                    "widget": {
+                        "name": "enable_memory"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "seed",
+                    "name": "seed",
+                    "shape": 7,
+                    "type": "INT",
+                    "widget": {
+                        "name": "seed"
+                    },
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "localized_name": "response",
+                    "name": "response",
+                    "type": "STRING",
+                    "links": [
+                        62
+                    ]
+                },
+                {
+                    "localized_name": "reasoning",
+                    "name": "reasoning",
+                    "type": "STRING",
+                    "links": null
+                }
+            ],
+            "properties": {
+                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
+                "Node name for S&R": "OpenAICompatibleLoader",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                "LLM_CONFIG (from input)",
+                "Custom/手动输入",
+                "You are an AI assistant",
+                "Describe the content shown in the image.",
+                0.7,
+                2048,
+                false,
+                897717331261300,
+                "randomize"
+            ]
+        },
+        {
+            "id": 53,
+            "type": "OpenAICompatibleLoader",
+            "pos": [
+                1408.9781023971639,
+                426.3476965506912
+            ],
+            "size": [
+                400,
+                330
+            ],
+            "flags": {},
+            "order": 4,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "llm_config",
+                    "name": "llm_config",
+                    "shape": 7,
+                    "type": "LLM_CONFIG",
+                    "link": null
+                },
+                {
+                    "localized_name": "prep_img",
+                    "name": "prep_img",
+                    "shape": 7,
+                    "type": "STRING",
+                    "link": 67
+                },
+                {
+                    "localized_name": "provider",
+                    "name": "provider",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "provider"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "model",
+                    "name": "model",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "model"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "system_prompt",
+                    "name": "system_prompt",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "system_prompt"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "prompt",
+                    "name": "prompt",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "prompt"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "temperature",
+                    "name": "temperature",
+                    "shape": 7,
+                    "type": "FLOAT",
+                    "widget": {
+                        "name": "temperature"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "max_tokens",
+                    "name": "max_tokens",
+                    "shape": 7,
+                    "type": "INT",
+                    "widget": {
+                        "name": "max_tokens"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "enable_memory",
+                    "name": "enable_memory",
+                    "shape": 7,
+                    "type": "BOOLEAN",
+                    "widget": {
+                        "name": "enable_memory"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "seed",
+                    "name": "seed",
+                    "shape": 7,
+                    "type": "INT",
+                    "widget": {
+                        "name": "seed"
+                    },
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "localized_name": "response",
+                    "name": "response",
+                    "type": "STRING",
+                    "links": [
+                        63
+                    ]
+                },
+                {
+                    "localized_name": "reasoning",
+                    "name": "reasoning",
+                    "type": "STRING",
+                    "links": null
+                }
+            ],
+            "properties": {
+                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
+                "Node name for S&R": "OpenAICompatibleLoader",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                "iFlow/心流",
+                "qwen3-vl-plus",
+                "You are an AI assistant",
+                "Describe the content shown in the image.",
+                0.7,
+                2048,
+                false,
+                653024945828893,
+                "randomize"
+            ]
+        },
+        {
+            "id": 54,
+            "type": "PreviewAny",
+            "pos": [
+                1873.9763023301216,
+                428.97649600749054
+            ],
+            "size": [
+                360.79388327976494,
+                380.3659063173028
+            ],
+            "flags": {},
+            "order": 6,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "源",
+                    "name": "source",
+                    "type": "*",
+                    "link": 63
+                }
+            ],
+            "outputs": [],
+            "properties": {
+                "cnr_id": "comfy-core",
+                "ver": "0.11.1",
+                "Node name for S&R": "PreviewAny",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                null,
+                null,
+                false
+            ]
+        },
+        {
+            "id": 44,
+            "type": "PreviewAny",
+            "pos": [
+                1872.2970877854261,
+                -42.10156782373913
+            ],
+            "size": [
+                364.6867579012669,
+                369.4525484040341
+            ],
+            "flags": {},
+            "order": 5,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "源",
+                    "name": "source",
+                    "type": "*",
+                    "link": 62
+                }
+            ],
+            "outputs": [],
+            "properties": {
+                "cnr_id": "comfy-core",
+                "ver": "0.11.1",
+                "Node name for S&R": "PreviewAny",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                null,
+                null,
+                false
+            ]
+        },
+        {
+            "id": 42,
+            "type": "LLM_Loader",
+            "pos": [
+                1082.696726426485,
+                -41.53421816001226
+            ],
+            "size": [
+                272.21246232992235,
+                130
+            ],
+            "flags": {},
+            "order": 1,
+            "mode": 0,
+            "inputs": [
+                {
+                    "localized_name": "provider",
+                    "name": "provider",
+                    "type": "COMBO",
+                    "widget": {
+                        "name": "provider"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "model",
+                    "name": "model",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "model"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "api_key",
+                    "name": "api_key",
+                    "type": "STRING",
+                    "widget": {
+                        "name": "api_key"
+                    },
+                    "link": null
+                },
+                {
+                    "localized_name": "custom_base_url",
+                    "name": "custom_base_url",
+                    "shape": 7,
+                    "type": "STRING",
+                    "widget": {
+                        "name": "custom_base_url"
+                    },
+                    "link": null
+                }
+            ],
+            "outputs": [
+                {
+                    "localized_name": "llm_config",
+                    "name": "llm_config",
+                    "type": "LLM_CONFIG",
+                    "links": [
+                        61
+                    ]
+                }
+            ],
+            "properties": {
+                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
+                "Node name for S&R": "LLM_Loader",
+                "widget_ue_connectable": {}
+            },
+            "widgets_values": [
+                "iFlow/心流",
+                "qwen3-vl-plus",
+                "",
+                ""
+            ]
+        }
+    ],
+    "links": [
+        [
+            61,
+            42,
+            0,
+            52,
+            0,
+            "LLM_CONFIG"
+        ],
+        [
+            62,
+            52,
+            0,
+            44,
+            0,
+            "STRING"
+        ],
+        [
+            63,
+            53,
+            0,
+            54,
+            0,
+            "STRING"
+        ],
+        [
+            64,
+            55,
+            0,
+            52,
+            1,
+            "STRING"
+        ],
+        [
+            66,
+            57,
+            0,
+            55,
+            0,
+            "IMAGE"
+        ],
+        [
+            67,
+            55,
+            0,
+            53,
+            1,
+            "STRING"
+        ]
+    ],
+    "groups": [],
+    "config": {},
+    "extra": {
+        "ds": {
+            "scale": 0.6567669330320945,
+            "offset": [
+                -197.3085332522095,
+                303.1699884121811
+            ]
+        },
+        "workflowRendererVersion": "LG",
+        "ue_links": [],
+        "links_added_by_ue": []
+    },
+    "version": 0.4
+}
