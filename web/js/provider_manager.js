@@ -82,7 +82,7 @@ const I18N_DICT = {
         menu_tooltip: "Manage LLM API Providers & Model Config"
     },
     zh: {
-        manager_title: "LLMs 模型管家",
+        manager_title: "LLM 管理器",
         unsaved_title: "未保存更改",
         unsaved_msg: "你有未保存的更改。\\n确定要放弃它们吗？",
         cancel: "取消",
@@ -142,7 +142,7 @@ const I18N_DICT = {
         delete: "删除",
         preview: "预览: ",
         lang_switch: "EN",
-        menu_button: "LLM 模型管家",
+        menu_button: "LLM 管理器",
         menu_tooltip: "管理 LLM API 供应商与模型配置"
     }
 };
@@ -479,24 +479,25 @@ class ProviderManager {
                             style: { position: "absolute", left: "8px", display: "flex", pointerEvents: "none", color: "var(--glass-text-secondary)" },
                             innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-language"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629" /><path d="M4 6.371h7" /><path d="M5 9c0 2.144 2.252 3.908 6 4" /><path d="M12 20l4 -9l4 9" /><path d="M19.1 18h-6.2" /><path d="M6.694 3 l.793 .582" /></svg>`
                         }),
-                        $el("select", {
-                            style: {
-                                background: "transparent",
-                                color: "var(--glass-text-primary)",
-                                border: "none",
-                                outline: "none",
-                                cursor: "pointer",
-                                padding: "6px 28px 6px 30px",
-                                appearance: "none",
-                                fontSize: "0.85em",
-                                fontFamily: "inherit"
-                            }
-                        }, [
-                            $el("option", { value: "zh", textContent: "简体中文" }),
-                            $el("option", { value: "en", textContent: "English" })
-                        ], (el) => {
-                            el.value = getLang();
-                            el.addEventListener("change", (e) => {
+                        (() => {
+                            const langSelect = $el("select", {
+                                style: {
+                                    background: "transparent",
+                                    color: "var(--glass-text-primary)",
+                                    border: "none",
+                                    outline: "none",
+                                    cursor: "pointer",
+                                    padding: "6px 28px 6px 30px",
+                                    appearance: "none",
+                                    fontSize: "0.85em",
+                                    fontFamily: "inherit"
+                                }
+                            }, [
+                                $el("option", { value: "zh", textContent: "简体中文" }),
+                                $el("option", { value: "en", textContent: "English" })
+                            ]);
+                            langSelect.value = getLang();
+                            langSelect.addEventListener("change", (e) => {
                                 localStorage.setItem("llm_pm_lang", e.target.value);
                                 // Re-render UI
                                 this.modal.remove();
@@ -511,7 +512,8 @@ class ProviderManager {
                                     menuBtn.title = t("menu_tooltip");
                                 }
                             });
-                        }),
+                            return langSelect;
+                        })(),
                         $el("div", {
                             style: { position: "absolute", right: "8px", display: "flex", pointerEvents: "none", color: "var(--glass-text-secondary)" },
                             innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`
