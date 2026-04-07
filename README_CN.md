@@ -6,15 +6,15 @@
 
 **语言**
 
-[![简体中文](https://img.shields.io/badge/README-简体中文-red?style=for-the-badge)](README_CN.md)
-[![English](https://img.shields.io/badge/README-English-blue?style=for-the-badge)](README.md)
+[![简体中文](https://img.shields.io/badge/README-简体中文-red?style=flat)](README_CN.md)
+[![English](https://img.shields.io/badge/README-English-blue?style=flat)](README.md)
 
 ---
 
-[![GitHub Stars](https://img.shields.io/github/stars/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=yellow)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=green)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/network)
-[![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
-[![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat-square&color=blue)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=yellow)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=green)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/network)
+[![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
+[![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=blue)](LICENSE)
 
 **在 ComfyUI 中轻松调用各种大语言模型 — 无需 GPU，API 即用。**
 
@@ -201,7 +201,7 @@ pip install -r requirements.txt
 
 [![Star History Chart](https://api.star-history.com/svg?repos=HuangYuChuh/ComfyUI-LLMs-Toolkit&type=Date)](https://star-history.com/#HuangYuChuh/ComfyUI-LLMs-Toolkit&Date)
 
-[![GitHub](https://img.shields.io/badge/GitHub-@HuangYuChuh-181717?style=flat-square&logo=github)](https://github.com/HuangYuChuh)
+[![GitHub](https://img.shields.io/badge/GitHub-@HuangYuChuh-181717?style=flat&logo=github)](https://github.com/HuangYuChuh)
 
 **Made with ❤️ for the ComfyUI community**
 
