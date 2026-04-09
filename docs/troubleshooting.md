@@ -63,4 +63,4 @@ When reporting, include:
 
 Open an issue and include environment + full traceback:
 
-- Issues: https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues
+- Issues: https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/issues

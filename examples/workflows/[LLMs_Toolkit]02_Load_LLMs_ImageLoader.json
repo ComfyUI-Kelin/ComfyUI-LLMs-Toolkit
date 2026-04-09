@@ -79,7 +79,7 @@
                 }
             ],
             "properties": {
-                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "aux_id": "ComfyUI-Kelin/ComfyUI-LLMs-Toolkit",
                 "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
                 "Node name for S&R": "ImagePrep",
                 "widget_ue_connectable": {}
@@ -273,7 +273,7 @@
                 }
             ],
             "properties": {
-                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "aux_id": "ComfyUI-Kelin/ComfyUI-LLMs-Toolkit",
                 "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
                 "Node name for S&R": "OpenAICompatibleLoader",
                 "widget_ue_connectable": {}
@@ -413,7 +413,7 @@
                 }
             ],
             "properties": {
-                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "aux_id": "ComfyUI-Kelin/ComfyUI-LLMs-Toolkit",
                 "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
                 "Node name for S&R": "OpenAICompatibleLoader",
                 "widget_ue_connectable": {}
@@ -564,7 +564,7 @@
                 }
             ],
             "properties": {
-                "aux_id": "HuangYuChuh/ComfyUI-LLMs-Toolkit",
+                "aux_id": "ComfyUI-Kelin/ComfyUI-LLMs-Toolkit",
                 "ver": "d21b7049175bf69f8f3548215b0503a7f57b4ec1",
                 "Node name for S&R": "LLM_Loader",
                 "widget_ue_connectable": {}
