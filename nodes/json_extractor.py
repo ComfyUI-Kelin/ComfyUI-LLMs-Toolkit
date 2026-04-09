@@ -37,7 +37,7 @@ class JSONExtractor:
             key: Key to extract (supports nested keys like 'user.name')
             
         Returns:
-            Extracted value as string
+            Extracted value, preserving scalar JSON types where possible
         """
         try:
             # Parse JSON string
@@ -49,9 +49,9 @@ class JSONExtractor:
             
             for k in keys:
                 if isinstance(value, dict):
-                    value = value.get(k)
-                    if value is None:
+                    if k not in value:
                         return (f"Key '{k}' not found",)
+                    value = value[k]
                 else:
                     return (f"Cannot access key '{k}' on non-dict value",)
             
