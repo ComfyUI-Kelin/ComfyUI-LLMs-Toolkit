@@ -17,7 +17,7 @@
 [![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=blue)](LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=orange)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/commits)
 
-**Bring the power of Large Language Models into your ComfyUI workflows — no GPU needed.**
+**ComfyUI custom nodes for DeepSeek, Qwen, GPT, and other OpenAI-compatible LLM APIs, with built-in tools for chat, translation, vision, and JSON workflows.**
 
 </div>
 
@@ -25,9 +25,9 @@
 
 ## What is this?
 
-ComfyUI-LLMs-Toolkit lets you call mainstream LLMs (like DeepSeek, Qwen, GPT, Moonshot, and many more) directly from your ComfyUI workflows using simple API connections. 
+ComfyUI-LLMs-Toolkit is a ComfyUI custom node pack for connecting DeepSeek, Qwen, GPT, Moonshot, and other OpenAI-compatible LLM APIs directly inside ComfyUI workflows.
 
-Whether you want to generate text, translate content, process images with vision models, or build structured JSON — this toolkit has you covered.
+Use it to build LLM-powered ComfyUI workflows for prompt generation, translation, structured JSON output, image understanding with multimodal models, and other text or vision automation tasks without running a local GPU model.
 
 ### Key Features
 

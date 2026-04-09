@@ -16,7 +16,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
 [![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=blue)](LICENSE)
 
-**在 ComfyUI 中轻松调用各种大语言模型 — 无需 GPU，API 即用。**
+**适用于 ComfyUI 的大模型自定义节点，支持 DeepSeek、通义千问、GPT 等 OpenAI 兼容 API，可直接搭建对话、翻译、视觉理解和 JSON 工作流。**
 
 </div>
 
@@ -24,9 +24,9 @@
 
 ## 这是什么？
 
-ComfyUI-LLMs-Toolkit 让你可以在 ComfyUI 工作流中，通过简单的 API 调用直接使用 DeepSeek、通义千问、GPT、Moonshot 等主流大语言模型。
+ComfyUI-LLMs-Toolkit 是一个面向 ComfyUI 的自定义节点包，让你可以在工作流里直接接入 DeepSeek、通义千问、GPT、Moonshot 等主流大语言模型和 OpenAI 兼容接口。
 
-不管你是想生成文本、翻译内容、用视觉模型处理图片，还是构建结构化 JSON 数据，这个工具包都能帮到你。
+你可以用它搭建基于 LLM 的 ComfyUI 工作流，用于提示词生成、文本翻译、结构化 JSON 输出、多模态图片理解，以及其他文本或视觉自动化场景，而不必本地部署 GPU 大模型。
 
 ### 主要特色
 
