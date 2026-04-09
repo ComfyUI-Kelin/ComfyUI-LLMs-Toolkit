@@ -1,5 +1,7 @@
 import json
-from typing import Tuple
+from typing import Any, Tuple
+
+from comfy_api.latest import IO
 
 
 class JSONExtractor:
@@ -21,12 +23,12 @@ class JSONExtractor:
             }
         }
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = (IO.AnyType.io_type,)
     RETURN_NAMES = ("value",)
     FUNCTION = "extract"
     CATEGORY = "🚦ComfyUI_LLMs_Toolkit/JSON"
 
-    def extract(self, json_string: str, key: str) -> Tuple[str]:
+    def extract(self, json_string: str, key: str) -> Tuple[Any]:
         """
         Extract value from JSON string by key.
         
@@ -35,7 +37,7 @@ class JSONExtractor:
             key: Key to extract (supports nested keys like 'user.name')
             
         Returns:
-            Extracted value as string
+            Extracted value, preserving scalar JSON types where possible
         """
         try:
             # Parse JSON string
@@ -47,19 +49,22 @@ class JSONExtractor:
             
             for k in keys:
                 if isinstance(value, dict):
-                    value = value.get(k)
-                    if value is None:
+                    if k not in value:
                         return (f"Key '{k}' not found",)
+                    value = value[k]
                 else:
                     return (f"Cannot access key '{k}' on non-dict value",)
             
-            # Convert value to string
+            # Preserve scalar JSON types so downstream nodes can receive native values.
             if isinstance(value, (dict, list)):
                 result = json.dumps(value, ensure_ascii=False)
+            elif isinstance(value, (str, int, float, bool)) or value is None:
+                result = value
             else:
                 result = str(value)
             
-            print(f"[LLMs_Toolkit] extracted {key}={result[:50]}...")
+            preview = str(result)[:50]
+            print(f"[LLMs_Toolkit] extracted {key}={preview}...")
             return (result,)
             
         except json.JSONDecodeError as e:
