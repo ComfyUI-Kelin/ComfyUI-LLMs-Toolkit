@@ -36,11 +36,19 @@ def _ensure_providers_file() -> dict:
     if not _PROVIDERS_FILE.exists():
         if _DEFAULT_PROVIDERS_FILE.exists():
             shutil.copy2(_DEFAULT_PROVIDERS_FILE, _PROVIDERS_FILE)
+            try:
+                os.chmod(_PROVIDERS_FILE, 0o600)
+            except OSError:
+                pass  # Windows doesn't support Unix permissions
             logger.info(f"Initialized providers.json from defaults.")
         else:
             # Fallback: create empty structure
             data = {"providers": []}
             _PROVIDERS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+            try:
+                os.chmod(_PROVIDERS_FILE, 0o600)
+            except OSError:
+                pass  # Windows doesn't support Unix permissions
             logger.warning("No default_providers.json found, created empty providers.json.")
 
     data = _load_providers()
@@ -86,6 +94,11 @@ def _save_providers(data: dict):
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     with open(_PROVIDERS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
+    # Restrict file permissions — API keys should only be readable by owner
+    try:
+        os.chmod(_PROVIDERS_FILE, 0o600)
+    except OSError:
+        pass  # Windows doesn't support Unix permissions
 
 
 # ─── API Route Handlers ─────────────────────────────────────────────────────
