@@ -348,7 +348,7 @@ class ProviderManager {
         );
     }
 
-    async checkConnectivity(apiHost, apiKey, model) {
+    async checkConnectivity(draft, model) {
         const btn = document.getElementById("pm-check-btn");
         if (!btn) return;
 
@@ -360,10 +360,25 @@ class ProviderManager {
         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="llm-pm-spin" style="margin-right:6px"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> ` + t("checking");
         btn.disabled = true;
 
+        // For existing (saved) providers, send providerId so the backend
+        // looks up the real key from disk. For new providers, send the
+        // actual apiKey since it hasn't been persisted yet.
+        const isNewProvider = draft._isNew || (draft.id && draft.id.startsWith("temp-"));
+        const checkBody = { apiHost: draft.apiHost, model };
+        if (isNewProvider) {
+            checkBody.apiKey = draft.apiKey;
+        } else {
+            checkBody.providerId = draft.id;
+            // If user entered a new key (not masked), send it directly
+            if (draft.apiKey && !draft.apiKey.includes("••••")) {
+                checkBody.apiKey = draft.apiKey;
+            }
+        }
+
         try {
             const res = await api.fetchApi("/llm_toolkit/providers/check", {
                 method: "POST",
-                body: JSON.stringify({ apiHost, apiKey, model })
+                body: JSON.stringify(checkBody)
             });
             const data = await res.json();
 
@@ -774,10 +789,11 @@ class ProviderManager {
         ]);
 
         // -- API Key
+        const isMaskedKey = draft.apiKey && draft.apiKey.includes("••••");
         const keyInput = $el("input", {
             type: "password",
-            value: draft.apiKey,
-            placeholder: "sk-...",
+            value: isMaskedKey ? "" : draft.apiKey,
+            placeholder: isMaskedKey ? draft.apiKey : "sk-...",
             style: { paddingRight: "40px" }, // Make room for the absolute eye icon
             oninput: (e) => draft.apiKey = e.target.value
         });
@@ -815,7 +831,7 @@ class ProviderManager {
         const checkBtn = $el("button", {
             id: "pm-check-btn",
             innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Check API`,
-            onclick: () => this.checkConnectivity(draft.apiHost, draft.apiKey, draft.models[0] || ""),
+            onclick: () => this.checkConnectivity(draft, draft.models[0] || ""),
             style: {
                 padding: "8px 16px", fontSize: "0.88em", borderRadius: "10px", minHeight: "unset",
                 display: "inline-flex", alignItems: "center", cursor: "pointer",

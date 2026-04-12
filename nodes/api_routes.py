@@ -103,10 +103,23 @@ def _save_providers(data: dict):
 
 # ─── API Route Handlers ─────────────────────────────────────────────────────
 
+def _mask_key(key: str) -> str:
+    """Mask an API key for safe transmission to the frontend."""
+    if not key:
+        return ""
+    if len(key) <= 8:
+        return "••••"
+    return key[:3] + "••••••" + key[-4:]
+
+
 async def get_providers(request: web.Request) -> web.Response:
     """GET /llm_toolkit/providers — Return all provider configurations."""
+    import copy
     data = _ensure_providers_file()
-    return web.json_response(data)
+    safe_data = copy.deepcopy(data)
+    for p in safe_data.get("providers", []):
+        p["apiKey"] = _mask_key(p.get("apiKey", ""))
+    return web.json_response(safe_data)
 
 
 async def save_provider(request: web.Request) -> web.Response:
@@ -138,6 +151,10 @@ async def save_provider(request: web.Request) -> web.Response:
     found = False
     for i, p in enumerate(providers):
         if p.get("id") == provider_id:
+            # Preserve existing key if frontend sent back a masked value
+            incoming_key = body.get("apiKey", "")
+            if not incoming_key or "\u2022\u2022\u2022\u2022" in incoming_key:
+                body["apiKey"] = p.get("apiKey", "")
             # Preserve isSystem flag from existing record
             body["isSystem"] = p.get("isSystem", False)
             providers[i] = body
@@ -151,7 +168,11 @@ async def save_provider(request: web.Request) -> web.Response:
     _save_providers(data)
 
     logger.info(f"{'Updated' if found else 'Created'} provider: {body.get('name')} ({provider_id})")
-    return web.json_response({"status": "ok", "provider": body})
+    # Return masked key in the response to avoid leaking it
+    import copy
+    safe_body = copy.deepcopy(body)
+    safe_body["apiKey"] = _mask_key(safe_body.get("apiKey", ""))
+    return web.json_response({"status": "ok", "provider": safe_body})
 
 
 async def delete_provider(request: web.Request) -> web.Response:
@@ -191,9 +212,23 @@ async def check_provider(request: web.Request) -> web.Response:
     except json.JSONDecodeError:
         return web.json_response({"error": "Invalid JSON body"}, status=400)
 
-    api_key = body.get("apiKey", "").strip()
+    provider_id = body.get("providerId", "").strip()
     api_host = body.get("apiHost", "").strip()
     model = body.get("model", "").strip()
+
+    # Priority: explicit non-masked apiKey from frontend > stored key by providerId
+    raw_key = body.get("apiKey", "").strip()
+    if raw_key and "••••" not in raw_key:
+        api_key = raw_key
+    elif provider_id:
+        api_key = ""
+        data = _load_providers()
+        for p in data.get("providers", []):
+            if p.get("id") == provider_id:
+                api_key = p.get("apiKey", "")
+                break
+    else:
+        api_key = raw_key
 
     if not api_key or not api_host:
         return web.json_response({"error": "apiKey and apiHost are required"}, status=400)
@@ -202,7 +237,8 @@ async def check_provider(request: web.Request) -> web.Response:
     try:
         import api_client
         import asyncio
-        client = api_client.LLMClient(base_url=api_host, api_key=api_key)
+        skip_ssl = body.get("skipSSLVerify", False)
+        client = api_client.LLMClient(base_url=api_host, api_key=api_key, skip_ssl_verify=skip_ssl)
         
         # 1. Try fetching models (doesn't consume tokens)
         try:
