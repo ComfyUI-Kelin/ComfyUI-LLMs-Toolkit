@@ -755,7 +755,13 @@ class ProviderManager {
                 checked: draft.enabled,
                 onchange: (e) => {
                     draft.enabled = e.target.checked;
-                    this.saveProvider(draft); // auto save toggle
+                    // Save only the enabled state using the original provider data,
+                    // so that other unsaved draft edits (name, key, etc.) are not persisted.
+                    const original = this.providers.find(p => p.id === draft.id);
+                    if (original && !original._isNew) {
+                        original.enabled = e.target.checked;
+                        this.saveProvider({ ...original });
+                    }
                 }
             }),
             $el("span.llm-pm-slider")
