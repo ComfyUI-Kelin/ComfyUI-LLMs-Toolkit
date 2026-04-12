@@ -281,7 +281,7 @@ class ProviderManager {
         this.showDialog({ title: title, message: message, confirmText: t("confirm"), onConfirm: onConfirm });
     }
 
-    async loadProviders() {
+    async loadProviders({ skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers");
             const data = await res.json();
@@ -296,14 +296,14 @@ class ProviderManager {
                 this.selectedId = this.providers[0]?.id || null;
             }
 
-            this.render();
+            if (!skipRender) this.render();
         } catch (e) {
             console.error("[LLMs_Toolkit] Failed to load providers:", e);
             this.showAlert(t("error"), t("load_error"));
         }
     }
 
-    async saveProvider(providerData) {
+    async saveProvider(providerData, { skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers", {
                 method: "POST",
@@ -311,9 +311,9 @@ class ProviderManager {
             });
             const data = await res.json();
             if (data.status === "ok") {
-                await this.loadProviders();
+                await this.loadProviders({ skipRender });
                 this.selectedId = data.provider.id;
-                this.render();
+                if (!skipRender) this.render();
             } else {
                 this.showAlert(t("save_failed"), data.error);
             }
@@ -899,14 +899,12 @@ class ProviderManager {
                 saveBtn.disabled = true;
 
                 if (draft._isNew) delete draft._isNew;
-                await this.saveProvider(draft);
+                await this.saveProvider(draft, { skipRender: true });
 
                 saveBtn.innerHTML = t("saved");
                 saveBtn.style.background = "#3d8b40"; // slightly darker green
                 setTimeout(() => {
-                    saveBtn.innerHTML = originalHtml;
-                    saveBtn.style.background = "#4CAF50";
-                    saveBtn.disabled = false;
+                    this.render();
                 }, 1500);
             }
         });
