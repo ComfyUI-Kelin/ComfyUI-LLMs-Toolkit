@@ -312,6 +312,7 @@ class ProviderManager {
             });
             const data = await res.json();
             if (data.status === "ok") {
+                invalidateProvidersCache();
                 await this.loadProviders({ skipRender });
                 this.selectedId = data.provider.id;
                 if (!skipRender) this.render();
@@ -333,6 +334,7 @@ class ProviderManager {
                     const res = await api.fetchApi(`/llm_toolkit/providers/${id}`, { method: "DELETE" });
                     const data = await res.json();
                     if (data.status === "ok") {
+                        invalidateProvidersCache();
                         if (this.selectedId === id) this.selectedId = null;
                         await this.loadProviders();
                     } else {
@@ -974,6 +976,29 @@ class ProviderManager {
 }
 
 // ============================================================================
+// Shared Providers Cache (module-level, used by all nodes)
+// ============================================================================
+let _providersCachePromise = null;
+
+function fetchProvidersShared() {
+    if (!_providersCachePromise) {
+        _providersCachePromise = api.fetchApi("/llm_toolkit/providers")
+            .then(res => res.json())
+            .then(data => data.providers || [])
+            .catch(e => {
+                console.error("[LLMs_Toolkit] Failed to fetch providers", e);
+                _providersCachePromise = null; // allow retry on error
+                return [];
+            });
+    }
+    return _providersCachePromise;
+}
+
+function invalidateProvidersCache() {
+    _providersCachePromise = null;
+}
+
+// ============================================================================
 // Registration & Node Extensions
 // ============================================================================
 app.registerExtension({
@@ -1034,17 +1059,10 @@ app.registerExtension({
 
         if (!providerWidget || !modelWidget) return;
 
-        // Fetch current providers to have the mapping of Provider -> Models
-        let providersCache = [];
-        try {
-            const res = await api.fetchApi("/llm_toolkit/providers");
-            const data = await res.json();
-            providersCache = data.providers || [];
-        } catch (e) {
-            console.error("[LLMs_Toolkit] Failed to fetch providers for node", e);
-        }
+        // Use shared module-level cache (single request shared across all nodes)
+        const providersCache = await fetchProvidersShared();
 
-        const updateModelOptions = (selectedProviderLabel) => {
+        const updateModelOptions = (selectedProviderLabel, providers) => {
             if (selectedProviderLabel === "LLM_CONFIG (from input)") {
                 modelWidget.options.values = ["LLM_CONFIG (from input)"];
                 if (modelWidget.value !== "LLM_CONFIG (from input)") {
@@ -1054,7 +1072,7 @@ app.registerExtension({
             }
 
             // Match provider by name, must be enabled
-            const found = providersCache.find(p => p.name === selectedProviderLabel && p.enabled);
+            const found = providers.find(p => p.name === selectedProviderLabel && p.enabled);
             if (found && found.models && found.models.length > 0) {
                 modelWidget.options.values = found.models;
                 if (!found.models.includes(modelWidget.value)) {
@@ -1069,13 +1087,15 @@ app.registerExtension({
 
         // Initial setup based on current value
         if (providerWidget.value) {
-            updateModelOptions(providerWidget.value);
+            updateModelOptions(providerWidget.value, providersCache);
         }
 
-        // Listen for changes on the provider widget
+        // Listen for changes on the provider widget — always re-fetch
+        // so that saves/deletes from the Provider Manager are picked up
         const originalCallback = providerWidget.callback;
-        providerWidget.callback = function () {
-            updateModelOptions(this.value);
+        providerWidget.callback = async function () {
+            const latestProviders = await fetchProvidersShared();
+            updateModelOptions(this.value, latestProviders);
             if (originalCallback) {
                 originalCallback.apply(this, arguments);
             }
