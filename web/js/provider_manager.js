@@ -79,7 +79,9 @@ const I18N_DICT = {
         preview: "Preview: ",
         lang_switch: "中",
         menu_button: "LLM Manager",
-        menu_tooltip: "Manage LLM API Providers & Model Config"
+        menu_tooltip: "Manage LLM API Providers & Model Config",
+        skip_ssl: "Skip SSL Verification",
+        skip_ssl_hint: "Enable this if the provider has certificate issues (common with some Chinese API providers)."
     },
     zh: {
         manager_title: "LLM 管理器",
@@ -143,7 +145,9 @@ const I18N_DICT = {
         preview: "预览: ",
         lang_switch: "EN",
         menu_button: "LLM 管理器",
-        menu_tooltip: "管理 LLM API 供应商与模型配置"
+        menu_tooltip: "管理 LLM API 供应商与模型配置",
+        skip_ssl: "跳过 SSL 验证",
+        skip_ssl_hint: "如果供应商存在证书问题可开启此选项（部分国内供应商可能需要）。"
     }
 };
 
@@ -378,7 +382,7 @@ class ProviderManager {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers/check", {
                 method: "POST",
-                body: JSON.stringify(checkBody)
+                body: JSON.stringify({ ...checkBody, skipSSLVerify: !!draft.skipSSLVerify })
             });
             const data = await res.json();
 
@@ -595,6 +599,7 @@ class ProviderManager {
             models: [],
             enabled: true,
             isSystem: false,
+            skipSSLVerify: false,
             _isNew: true
         };
         this.providers.push(newProvider);
@@ -968,6 +973,23 @@ class ProviderManager {
                     id: "pm-url-preview",
                     textContent: `${t("preview")}${draft.apiHost} /chat/completions`
                 })
+            ]),
+
+            $el("div.llm-pm-field", [
+                $el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8em", fontWeight: "600", color: "var(--glass-text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" } }, [
+                    $el("span", t("skip_ssl")),
+                    $el("label.llm-pm-switch", [
+                        $el("input", {
+                            type: "checkbox",
+                            checked: !!draft.skipSSLVerify,
+                            onchange: (e) => {
+                                draft.skipSSLVerify = e.target.checked;
+                            }
+                        }),
+                        $el("span.llm-pm-slider")
+                    ])
+                ]),
+                $el("div.llm-pm-field-hint", t("skip_ssl_hint"))
             ]),
 
             $el("div.llm-pm-field", [

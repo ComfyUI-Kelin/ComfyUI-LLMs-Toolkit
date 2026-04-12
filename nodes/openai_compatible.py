@@ -309,6 +309,7 @@ class OpenAICompatibleLoader:
         actual_model = "" if model in ("Custom Input", "Custom/手动输入", _FROM_INPUT, "") else model
         provider_id = "custom"
         provider_name = "Custom Endpoint"
+        p_config = None
 
         if provider == _FROM_INPUT:
             # Mode 1: All config comes from LLM_CONFIG input node
@@ -397,7 +398,8 @@ class OpenAICompatibleLoader:
 
         # ── Make API call ────────────────────────────────────────────
         try:
-            client = LLMClient(base_url, api_key)
+            skip_ssl = p_config.get("skipSSLVerify", False) if p_config else False
+            client = LLMClient(base_url, api_key, skip_ssl_verify=skip_ssl)
             response_content, data = client.chat(payload)
 
             # Extract reasoning content (DeepSeek/R1)
