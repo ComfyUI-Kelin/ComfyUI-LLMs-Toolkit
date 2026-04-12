@@ -708,7 +708,7 @@ class ProviderManager {
                     const tr = $el("tr", { style: { borderBottom: "1px solid var(--border-color)", background: isError ? "rgba(244,67,54,0.08)" : "transparent" } });
                     const date = new Date(row.timestamp * 1000).toLocaleString();
 
-                    tr.appendChild($el("td", { style: { padding: "8px", textAlign: "center" }, innerHTML: isError ? `<span style="color:#f44336" title=t("error")>✗</span>` : `<span style="color:#4CAF50" title=t("ok")>✓</span>` }));
+                    tr.appendChild($el("td", { style: { padding: "8px", textAlign: "center" }, innerHTML: isError ? `<span style="color:#f44336" title="${t("error")}">✗</span>` : `<span style="color:#4CAF50" title="${t("ok")}">✓</span>` }));
                     tr.appendChild($el("td", { style: { padding: "8px" }, textContent: date }));
                     tr.appendChild($el("td", { style: { padding: "8px", fontWeight: "bold" }, textContent: row.provider }));
                     tr.appendChild($el("td", { style: { padding: "8px" }, textContent: row.model }));
