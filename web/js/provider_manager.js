@@ -184,6 +184,7 @@ class ProviderManager {
         this.searchQuery = "";
         this.modal = null;
         this.currentDraft = null;
+        this._renderGeneration = 0;
     }
 
     hasUnsavedChanges() {
@@ -281,7 +282,7 @@ class ProviderManager {
         this.showDialog({ title: title, message: message, confirmText: t("confirm"), onConfirm: onConfirm });
     }
 
-    async loadProviders() {
+    async loadProviders({ skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers");
             const data = await res.json();
@@ -296,14 +297,14 @@ class ProviderManager {
                 this.selectedId = this.providers[0]?.id || null;
             }
 
-            this.render();
+            if (!skipRender) this.render();
         } catch (e) {
             console.error("[LLMs_Toolkit] Failed to load providers:", e);
             this.showAlert(t("error"), t("load_error"));
         }
     }
 
-    async saveProvider(providerData) {
+    async saveProvider(providerData, { skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers", {
                 method: "POST",
@@ -311,9 +312,9 @@ class ProviderManager {
             });
             const data = await res.json();
             if (data.status === "ok") {
-                await this.loadProviders();
+                await this.loadProviders({ skipRender });
                 this.selectedId = data.provider.id;
-                this.render();
+                if (!skipRender) this.render();
             } else {
                 this.showAlert(t("save_failed"), data.error);
             }
@@ -633,6 +634,7 @@ class ProviderManager {
     }
 
     async renderContent() {
+        const gen = ++this._renderGeneration;
         this.contentContainer.innerHTML = "";
 
         if (this.selectedId === "USAGE_STATS") {
@@ -641,6 +643,7 @@ class ProviderManager {
 
             try {
                 const res = await api.fetchApi("/llm_toolkit/usage");
+                if (gen !== this._renderGeneration) return;
                 if (!res.ok) {
                     this.contentContainer.innerHTML = "";
                     if (res.status === 404) {
@@ -651,6 +654,7 @@ class ProviderManager {
                     return;
                 }
                 const data = await res.json();
+                if (gen !== this._renderGeneration) return;
 
                 this.contentContainer.innerHTML = "";
                 this.contentContainer.appendChild($el("h2", { textContent: t("usage_dashboard"), style: { margin: "0 0 12px 0" } }));
@@ -899,14 +903,12 @@ class ProviderManager {
                 saveBtn.disabled = true;
 
                 if (draft._isNew) delete draft._isNew;
-                await this.saveProvider(draft);
+                await this.saveProvider(draft, { skipRender: true });
 
                 saveBtn.innerHTML = t("saved");
                 saveBtn.style.background = "#3d8b40"; // slightly darker green
                 setTimeout(() => {
-                    saveBtn.innerHTML = originalHtml;
-                    saveBtn.style.background = "#4CAF50";
-                    saveBtn.disabled = false;
+                    this.render();
                 }, 1500);
             }
         });
