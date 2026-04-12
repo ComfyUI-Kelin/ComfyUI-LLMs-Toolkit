@@ -184,6 +184,7 @@ class ProviderManager {
         this.searchQuery = "";
         this.modal = null;
         this.currentDraft = null;
+        this._renderGeneration = 0;
     }
 
     hasUnsavedChanges() {
@@ -633,6 +634,7 @@ class ProviderManager {
     }
 
     async renderContent() {
+        const gen = ++this._renderGeneration;
         this.contentContainer.innerHTML = "";
 
         if (this.selectedId === "USAGE_STATS") {
@@ -641,6 +643,7 @@ class ProviderManager {
 
             try {
                 const res = await api.fetchApi("/llm_toolkit/usage");
+                if (gen !== this._renderGeneration) return;
                 if (!res.ok) {
                     this.contentContainer.innerHTML = "";
                     if (res.status === 404) {
@@ -651,6 +654,7 @@ class ProviderManager {
                     return;
                 }
                 const data = await res.json();
+                if (gen !== this._renderGeneration) return;
 
                 this.contentContainer.innerHTML = "";
                 this.contentContainer.appendChild($el("h2", { textContent: t("usage_dashboard"), style: { margin: "0 0 12px 0" } }));
