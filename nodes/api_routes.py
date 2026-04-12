@@ -203,18 +203,19 @@ async def check_provider(request: web.Request) -> web.Response:
     api_host = body.get("apiHost", "").strip()
     model = body.get("model", "").strip()
 
-    # Look up the real API key from stored config
-    api_key = ""
-    if provider_id:
+    # Priority: explicit non-masked apiKey from frontend > stored key by providerId
+    raw_key = body.get("apiKey", "").strip()
+    if raw_key and "••••" not in raw_key:
+        api_key = raw_key
+    elif provider_id:
+        api_key = ""
         data = _load_providers()
         for p in data.get("providers", []):
             if p.get("id") == provider_id:
                 api_key = p.get("apiKey", "")
                 break
-
-    # Also accept direct apiKey for new/unsaved providers
-    if not api_key:
-        api_key = body.get("apiKey", "").strip()
+    else:
+        api_key = raw_key
 
     if not api_key or not api_host:
         return web.json_response({"error": "apiKey and apiHost are required"}, status=400)
