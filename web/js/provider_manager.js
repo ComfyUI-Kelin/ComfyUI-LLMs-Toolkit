@@ -62,6 +62,12 @@ const I18N_DICT = {
         latency: "Latency",
         usage_load_err: "Failed to load usage data. Check logs.",
         select_edit: "Select a provider from the sidebar to edit.",
+        welcome_title: "Getting Started",
+        welcome_step1: "1. Pick a provider from the sidebar (e.g. DeepSeek)",
+        welcome_step2: "2. Enter your API Key",
+        welcome_step3: "3. Click Check API to verify",
+        welcome_step4: "4. Click Save and enable it",
+        welcome_tip: "Tip: DeepSeek offers ¥500 free credits for new users.",
         provider_name: "Provider Name",
         enable_nodes: "Enable in Nodes",
         base_url: "Base URL",
@@ -136,6 +142,12 @@ const I18N_DICT = {
         latency: "延迟",
         usage_load_err: "加载用量数据失败，请检查日志。",
         select_edit: "请从左侧选择一个供应商进行编辑。",
+        welcome_title: "快速开始",
+        welcome_step1: "1. 从左侧选择一个供应商（如 DeepSeek）",
+        welcome_step2: "2. 填入你的 API Key",
+        welcome_step3: "3. 点击 Check API 验证连通性",
+        welcome_step4: "4. 保存并启用",
+        welcome_tip: "提示：DeepSeek 为新用户提供 500 元免费额度。",
         provider_name: "供应商名称",
         enable_nodes: "在节点中启用",
         base_url: "接口地址 (Base URL)",
@@ -778,9 +790,38 @@ class ProviderManager {
 
         const provider = this.providers.find(p => p.id === this.selectedId);
         if (!provider) {
-            this.contentContainer.appendChild(
-                $el("div.llm-pm-empty", t("select_edit"))
-            );
+            // Welcome / empty state
+            const welcome = $el("div", {
+                style: {
+                    display: "flex", flexDirection: "column", justifyContent: "center",
+                    alignItems: "center", height: "100%", padding: "40px", textAlign: "center"
+                }
+            }, [
+                $el("h2", {
+                    textContent: t("welcome_title"),
+                    style: { margin: "0 0 24px 0", fontSize: "1.2em", color: "var(--glass-text-primary)" }
+                }),
+                $el("div", {
+                    style: {
+                        textAlign: "left", fontSize: "0.92em", lineHeight: "2.2",
+                        color: "var(--glass-text-secondary)", maxWidth: "360px"
+                    }
+                }, [
+                    $el("div", { textContent: t("welcome_step1") }),
+                    $el("div", { textContent: t("welcome_step2") }),
+                    $el("div", { textContent: t("welcome_step3") }),
+                    $el("div", { textContent: t("welcome_step4") }),
+                ]),
+                $el("div", {
+                    textContent: t("welcome_tip"),
+                    style: {
+                        marginTop: "20px", fontSize: "0.82em", color: "var(--glass-text-tertiary)",
+                        padding: "10px 16px", background: "rgba(99, 102, 241, 0.08)",
+                        borderRadius: "8px", border: "1px solid rgba(99, 102, 241, 0.15)"
+                    }
+                })
+            ]);
+            this.contentContainer.appendChild(welcome);
             return;
         }
 
