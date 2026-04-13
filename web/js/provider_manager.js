@@ -190,6 +190,21 @@ function t(key) {
     return I18N_DICT[lang]?.[key] || I18N_DICT["en"][key] || key;
 }
 
+function getCheckStatus(providerId) {
+    try {
+        const data = JSON.parse(localStorage.getItem("llm_pm_check_status") || "{}");
+        return data[providerId] || null;
+    } catch { return null; }
+}
+
+function setCheckStatus(providerId, status) {
+    try {
+        const data = JSON.parse(localStorage.getItem("llm_pm_check_status") || "{}");
+        data[providerId] = { status, timestamp: Date.now() };
+        localStorage.setItem("llm_pm_check_status", JSON.stringify(data));
+    } catch {}
+}
+
 // ============================================================================
 // UI Component
 // ============================================================================
@@ -423,6 +438,8 @@ class ProviderManager {
                 btn.style.color = "var(--glass-success)";
                 btn.style.borderColor = "var(--glass-success)";
                 btn.style.boxShadow = "0 0 12px var(--glass-success-glow)";
+                setCheckStatus(draft.id, "ok");
+                this.renderSidebar();
             } else {
                 // Error State
                 btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> ` + t("failed");
@@ -430,6 +447,8 @@ class ProviderManager {
                 btn.style.color = "var(--glass-danger)";
                 btn.style.borderColor = "var(--glass-danger)";
                 btn.style.boxShadow = "0 0 12px rgba(248, 113, 113, 0.3)";
+                setCheckStatus(draft.id, "error");
+                this.renderSidebar();
                 console.warn("[LLMs Toolkit] Connect Error: ", data.message);
 
                 // Show user-friendly hint (if available) with raw error as detail
