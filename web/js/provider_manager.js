@@ -88,6 +88,7 @@ const I18N_DICT = {
         fetching_models: "Fetching...",
         fetch_models_err: "Failed to fetch models",
         models_found: " models found",
+        new_models_added: " new",
         no_models_found: "No models returned. The provider may not support the /models endpoint."
     },
     zh: {
@@ -161,6 +162,7 @@ const I18N_DICT = {
         fetching_models: "获取中...",
         fetch_models_err: "获取模型失败",
         models_found: " 个模型已获取",
+        new_models_added: " 个新增",
         no_models_found: "未返回模型列表，该供应商可能不支持 /models 接口。"
     }
 };
@@ -958,109 +960,7 @@ class ProviderManager {
                                 }
                             });
                             renderModels();
-                            this.showAlert("\u2713", `${data.models.length}${t("models_found")}` + (addedCount > 0 ? ` (+${addedCount} new)` : ""));
-                        } else if (data.status === "ok") {
-                            this.showAlert(t("fetch_models"), t("no_models_found"));
-                        } else {
-                            this.showAlert(t("fetch_models_err"), data.message || "Unknown error");
-                        }
-                    } catch (e) {
-                        this.showAlert(t("fetch_models_err"), e.message);
-                    }
-
-                    fetchModelsBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models");
-                    fetchModelsBtn.style.pointerEvents = "";
-                }
-            });
-            modelsContainer.appendChild(fetchModelsBtn);
-
-            // Fetch Models button
-            const fetchModelsBtn = $el("span", {
-                className: "llm-pm-model-add",
-                innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models"),
-                onclick: async () => {
-                    fetchModelsBtn.innerHTML = t("fetching_models");
-                    fetchModelsBtn.style.pointerEvents = "none";
-
-                    const isNew = draft._isNew || (draft.id && draft.id.startsWith("temp-"));
-                    const fetchBody = { apiHost: draft.apiHost, skipSSLVerify: !!draft.skipSSLVerify };
-                    if (isNew) {
-                        fetchBody.apiKey = draft.apiKey;
-                    } else {
-                        fetchBody.providerId = draft.id;
-                        if (draft.apiKey && !draft.apiKey.includes("\u2022\u2022\u2022\u2022")) {
-                            fetchBody.apiKey = draft.apiKey;
-                        }
-                    }
-
-                    try {
-                        const res = await api.fetchApi("/llm_toolkit/providers/models", {
-                            method: "POST",
-                            body: JSON.stringify(fetchBody)
-                        });
-                        const data = await res.json();
-                        if (data.status === "ok" && data.models && data.models.length > 0) {
-                            const existingSet = new Set(draft.models);
-                            let addedCount = 0;
-                            data.models.forEach(m => {
-                                if (!existingSet.has(m)) {
-                                    draft.models.push(m);
-                                    addedCount++;
-                                }
-                            });
-                            renderModels();
-                            this.showAlert("\u2713", `${data.models.length}${t("models_found")}` + (addedCount > 0 ? ` (+${addedCount} new)` : ""));
-                        } else if (data.status === "ok") {
-                            this.showAlert(t("fetch_models"), t("no_models_found"));
-                        } else {
-                            this.showAlert(t("fetch_models_err"), data.message || "Unknown error");
-                        }
-                    } catch (e) {
-                        this.showAlert(t("fetch_models_err"), e.message);
-                    }
-
-                    fetchModelsBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models");
-                    fetchModelsBtn.style.pointerEvents = "";
-                }
-            });
-            modelsContainer.appendChild(fetchModelsBtn);
-
-            // Fetch Models button
-            const fetchModelsBtn = $el("span", {
-                className: "llm-pm-model-add",
-                innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models"),
-                onclick: async () => {
-                    fetchModelsBtn.innerHTML = t("fetching_models");
-                    fetchModelsBtn.style.pointerEvents = "none";
-
-                    const isNew = draft._isNew || (draft.id && draft.id.startsWith("temp-"));
-                    const fetchBody = { apiHost: draft.apiHost, skipSSLVerify: !!draft.skipSSLVerify };
-                    if (isNew) {
-                        fetchBody.apiKey = draft.apiKey;
-                    } else {
-                        fetchBody.providerId = draft.id;
-                        if (draft.apiKey && !draft.apiKey.includes("\u2022\u2022\u2022\u2022")) {
-                            fetchBody.apiKey = draft.apiKey;
-                        }
-                    }
-
-                    try {
-                        const res = await api.fetchApi("/llm_toolkit/providers/models", {
-                            method: "POST",
-                            body: JSON.stringify(fetchBody)
-                        });
-                        const data = await res.json();
-                        if (data.status === "ok" && data.models && data.models.length > 0) {
-                            const existingSet = new Set(draft.models);
-                            let addedCount = 0;
-                            data.models.forEach(m => {
-                                if (!existingSet.has(m)) {
-                                    draft.models.push(m);
-                                    addedCount++;
-                                }
-                            });
-                            renderModels();
-                            this.showAlert("\u2713", `${data.models.length}${t("models_found")}` + (addedCount > 0 ? ` (+${addedCount} new)` : ""));
+                            this.showAlert("\u2713", `${data.models.length}${t("models_found")}` + (addedCount > 0 ? ` (+${addedCount}${t("new_models_added")})` : ""));
                         } else if (data.status === "ok") {
                             this.showAlert(t("fetch_models"), t("no_models_found"));
                         } else {
