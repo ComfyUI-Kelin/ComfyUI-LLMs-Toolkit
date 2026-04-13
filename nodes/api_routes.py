@@ -286,6 +286,54 @@ async def check_provider(request: web.Request) -> web.Response:
         }, status=502)
 
 
+async def fetch_models(request: web.Request) -> web.Response:
+    """POST /llm_toolkit/providers/models - Fetch available models from provider API."""
+    try:
+        body = await request.json()
+    except json.JSONDecodeError:
+        return web.json_response({"error": "Invalid JSON body"}, status=400)
+
+    provider_id = body.get("providerId", "").strip()
+    api_host = body.get("apiHost", "").strip()
+    skip_ssl = body.get("skipSSLVerify", False)
+
+    # Look up API key from stored config
+    api_key = ""
+    raw_key = body.get("apiKey", "").strip()
+    if raw_key and "•" not in raw_key:  # not masked
+        api_key = raw_key
+    elif provider_id:
+        data = _load_providers()
+        for p in data.get("providers", []):
+            if p.get("id") == provider_id:
+                api_key = p.get("apiKey", "")
+                break
+
+    if not api_key or not api_host:
+        return web.json_response({"error": "apiKey and apiHost are required"}, status=400)
+
+    try:
+        import api_client
+        import asyncio
+        client = api_client.LLMClient(base_url=api_host, api_key=api_key, skip_ssl_verify=skip_ssl)
+        result = await asyncio.to_thread(client.list_models)
+
+        # Extract model IDs from the response
+        models = []
+        if isinstance(result, dict) and "data" in result:
+            for m in result["data"]:
+                if isinstance(m, dict) and "id" in m:
+                    models.append(m["id"])
+
+        models.sort()
+        return web.json_response({"status": "ok", "models": models})
+    except Exception as e:
+        return web.json_response({
+            "status": "error",
+            "message": str(e)[:500]
+        }, status=502)
+
+
 async def get_usage_stats(request: web.Request) -> web.Response:
     """GET /llm_toolkit/usage — Return token usage history (last 500 entries)."""
     from collections import deque
@@ -333,6 +381,10 @@ try:
     @PromptServer.instance.routes.post("/llm_toolkit/providers/check")
     async def _route_check_provider(request):
         return await check_provider(request)
+
+    @PromptServer.instance.routes.post("/llm_toolkit/providers/models")
+    async def _route_fetch_models(request):
+        return await fetch_models(request)
 
     print("[LLMs_Toolkit] ✓ All API routes registered (including /llm_toolkit/usage)")
 except Exception as e:
