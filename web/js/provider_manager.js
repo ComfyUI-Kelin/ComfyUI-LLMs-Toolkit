@@ -86,7 +86,7 @@ const I18N_DICT = {
     zh: {
         manager_title: "LLM 管理器",
         unsaved_title: "未保存更改",
-        unsaved_msg: "你有未保存的更改。\\n确定要放弃它们吗？",
+        unsaved_msg: "你有未保存的更改。\n确定要放弃它们吗？",
         cancel: "取消",
         ok: "好的",
         confirm: "确认",
@@ -95,7 +95,7 @@ const I18N_DICT = {
         save_failed: "保存失败",
         save_err: "保存配置失败。",
         delete_title: "删除供应商",
-        delete_msg: "确定要删除这个自定义供应商吗？\\n此操作无法撤销。",
+        delete_msg: "确定要删除这个自定义供应商吗？\n此操作无法撤销。",
         delete_failed: "删除失败",
         delete_err: "删除供应商失败。",
         checking: "检测中...",
