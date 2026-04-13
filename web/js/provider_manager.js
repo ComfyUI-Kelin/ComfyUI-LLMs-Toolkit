@@ -670,6 +670,25 @@ class ProviderManager {
             const tagLabel = p.enabled ? (hasKey ? t("on") : t("need_key")) : t("off");
             const tags = [$el("span.llm-pm-tag" + tagClass, tagLabel)];
 
+            const checkInfo = getCheckStatus(p.id);
+            let dotEl = null;
+            if (checkInfo) {
+                const age = Date.now() - checkInfo.timestamp;
+                const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                if (age < sevenDays) {
+                    const dotColor = checkInfo.status === "ok" ? "var(--glass-success)" : "var(--glass-danger)";
+                    dotEl = $el("span", {
+                        style: {
+                            width: "6px", height: "6px", borderRadius: "50%",
+                            background: dotColor, display: "inline-block", marginRight: "6px",
+                            boxShadow: `0 0 4px ${dotColor}`
+                        }
+                    });
+                }
+            }
+
+            const tagsChildren = dotEl ? [dotEl, ...tags] : tags;
+
             const item = $el("div.llm-pm-item" + (isActive ? ".active" : ""), {
                 onclick: () => {
                     if (this.selectedId === p.id) return;
@@ -684,7 +703,7 @@ class ProviderManager {
                     $el("span", p.name)
                 ]),
                 $el("div", { style: { flex: 1 } }),
-                $el("div.llm-pm-item-tags", tags)
+                $el("div.llm-pm-item-tags", tagsChildren)
             ]);
 
             this.sidebarListContainer.appendChild(item);
