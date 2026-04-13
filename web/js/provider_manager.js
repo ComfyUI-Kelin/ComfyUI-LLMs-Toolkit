@@ -89,7 +89,8 @@ const I18N_DICT = {
         fetch_models_err: "Failed to fetch models",
         models_found: " models found",
         new_models_added: " new",
-        no_models_found: "No models returned. The provider may not support the /models endpoint."
+        no_models_found: "No models returned. The provider may not support the /models endpoint.",
+        system_url_hint: "System default. Change only if you know what you're doing."
     },
     zh: {
         manager_title: "LLM 管理器",
@@ -163,7 +164,8 @@ const I18N_DICT = {
         fetch_models_err: "获取模型失败",
         models_found: " 个模型已获取",
         new_models_added: " 个新增",
-        no_models_found: "未返回模型列表，该供应商可能不支持 /models 接口。"
+        no_models_found: "未返回模型列表，该供应商可能不支持 /models 接口。",
+        system_url_hint: "系统默认地址，非必要请勿修改。"
     }
 };
 
@@ -1045,7 +1047,11 @@ class ProviderManager {
                 $el("div.llm-pm-field-hint", {
                     id: "pm-url-preview",
                     textContent: `${t("preview")}${draft.apiHost} /chat/completions`
-                })
+                }),
+                ...(draft.isSystem ? [$el("div.llm-pm-field-hint", {
+                    textContent: "\uD83D\uDD12 " + t("system_url_hint"),
+                    style: { opacity: "0.7", fontStyle: "italic" }
+                })] : [])
             ]),
 
             $el("div.llm-pm-field", [
