@@ -337,8 +337,9 @@ class ProviderManager {
             const data = await res.json();
             this.providers = data.providers || [];
 
-            // Auto-select first if none selected
-            if (!this.selectedId && this.providers.length > 0) {
+            // Auto-select first if none selected (skip on first visit to show welcome)
+            const hasVisited = localStorage.getItem("llm_pm_has_visited");
+            if (!this.selectedId && this.providers.length > 0 && hasVisited) {
                 this.selectedId = this.providers[0].id;
             }
             // Ensure selectedId is still valid
@@ -713,6 +714,9 @@ class ProviderManager {
                     if (this.selectedId === p.id) return;
                     this.checkUnsaved(() => {
                         this.selectedId = p.id;
+                        if (!localStorage.getItem("llm_pm_has_visited")) {
+                            localStorage.setItem("llm_pm_has_visited", "1");
+                        }
                         this.render();
                     });
                 }
