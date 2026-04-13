@@ -261,9 +261,28 @@ async def check_provider(request: web.Request) -> web.Response:
         })
 
     except Exception as e:
+        error_msg = str(e)[:500]
+        hint = ""
+        error_lower = error_msg.lower()
+        if "401" in error_msg or "unauthorized" in error_lower or "authentication" in error_lower:
+            hint = "API Key may be invalid or expired. Please check and re-enter."
+        elif "403" in error_msg or "forbidden" in error_lower:
+            hint = "Access denied. Your API Key may lack required permissions."
+        elif "404" in error_msg or "not found" in error_lower:
+            hint = "Model or endpoint not found. Please verify the model name and Base URL."
+        elif "429" in error_msg or "rate" in error_lower or "quota" in error_lower:
+            hint = "Rate limited or quota exceeded. Check your usage on the provider's website."
+        elif "timeout" in error_lower or "timed out" in error_lower:
+            hint = "Connection timed out. Check your network or try again later."
+        elif "ssl" in error_lower or "certificate" in error_lower:
+            hint = "SSL certificate error. Try enabling 'Skip SSL Verification' for this provider."
+        elif "connection" in error_lower or "refused" in error_lower or "resolve" in error_lower:
+            hint = "Cannot connect to the server. Please check the Base URL and your network."
+
         return web.json_response({
             "status": "error",
-            "message": str(e)[:500]
+            "message": error_msg,
+            "hint": hint
         }, status=502)
 
 

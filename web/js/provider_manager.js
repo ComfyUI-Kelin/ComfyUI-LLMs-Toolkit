@@ -36,6 +36,7 @@ const I18N_DICT = {
         connected: "Connected!",
         failed: "Failed",
         conn_failed: "Connection Failed",
+        error_detail: "Technical detail",
         network_err_title: "⚠️ Network Error",
         network_err_msg: "❌ Request failed. Network error or CORS issue.",
         search_placeholder: "Search providers/models...",
@@ -103,6 +104,7 @@ const I18N_DICT = {
         connected: "连通成功！",
         failed: "连接失败",
         conn_failed: "连接失败",
+        error_detail: "技术详情",
         network_err_title: "⚠️ 网络错误",
         network_err_msg: "❌ 请求失败。网络错误或存在跨域(CORS)限制。",
         search_placeholder: "搜索 供应商/模型...",
@@ -404,8 +406,11 @@ class ProviderManager {
                 btn.style.boxShadow = "0 0 12px rgba(248, 113, 113, 0.3)";
                 console.warn("[LLMs Toolkit] Connect Error: ", data.message);
 
-                // Still show the alert for the specific error message
-                setTimeout(() => this.showAlert(t("conn_failed"), "❌ " + data.message), 100);
+                // Show user-friendly hint (if available) with raw error as detail
+                const alertMsg = data.hint
+                    ? `${data.hint}\n\n${t("error_detail")}: ${data.message}`
+                    : `❌ ${data.message}`;
+                setTimeout(() => this.showAlert(t("conn_failed"), alertMsg), 100);
             }
         } catch (e) {
             console.error(e);
