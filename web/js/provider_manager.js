@@ -882,14 +882,15 @@ class ProviderManager {
             $el("input", {
                 type: "checkbox",
                 checked: draft.enabled,
-                onchange: (e) => {
+                onchange: async (e) => {
                     draft.enabled = e.target.checked;
                     // Save only the enabled state using the original provider data,
                     // so that other unsaved draft edits (name, key, etc.) are not persisted.
                     const original = this.providers.find(p => p.id === draft.id);
                     if (original && !original._isNew) {
                         original.enabled = e.target.checked;
-                        this.saveProvider({ ...original });
+                        await this.saveProvider({ ...original }, { skipRender: true });
+                        this.renderSidebar();
                     }
                 }
             }),
