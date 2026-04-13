@@ -81,7 +81,8 @@ const I18N_DICT = {
         menu_button: "LLM Manager",
         menu_tooltip: "Manage LLM API Providers & Model Config",
         skip_ssl: "Skip SSL Verification",
-        skip_ssl_hint: "Enable this if the provider has certificate issues (common with some Chinese API providers)."
+        skip_ssl_hint: "Enable this if the provider has certificate issues (common with some Chinese API providers).",
+        need_key: "NEED KEY"
     },
     zh: {
         manager_title: "LLM 管理器",
@@ -147,7 +148,8 @@ const I18N_DICT = {
         menu_button: "LLM 管理器",
         menu_tooltip: "管理 LLM API 供应商与模型配置",
         skip_ssl: "跳过 SSL 验证",
-        skip_ssl_hint: "如果供应商存在证书问题可开启此选项（部分国内供应商可能需要）。"
+        skip_ssl_hint: "如果供应商存在证书问题可开启此选项（部分国内供应商可能需要）。",
+        need_key: "需配置"
     }
 };
 
@@ -632,7 +634,10 @@ class ProviderManager {
         filtered.forEach(p => {
             const isActive = this.selectedId === p.id;
 
-            const tags = [$el("span.llm-pm-tag" + (p.enabled ? ".on" : ""), p.enabled ? t("on") : t("off"))];
+            const hasKey = p.apiKey && p.apiKey !== "";
+            const tagClass = p.enabled ? (hasKey ? ".on" : ".needkey") : "";
+            const tagLabel = p.enabled ? (hasKey ? t("on") : t("need_key")) : t("off");
+            const tags = [$el("span.llm-pm-tag" + tagClass, tagLabel)];
 
             const item = $el("div.llm-pm-item" + (isActive ? ".active" : ""), {
                 onclick: () => {
