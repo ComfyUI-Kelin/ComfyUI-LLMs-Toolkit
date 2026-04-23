@@ -43,9 +43,9 @@ class ImagePrep:
             arr = arr.squeeze(-1)
         return Image.fromarray((arr * 255).astype("uint8"))
 
-    def _encode(self, image: Image.Image, fmt: str, quality_val: int) -> str:
+    def _encode(self, image: Image.Image, fmt: str, quality_str: str, quality_val: int) -> str:
         size_map = {"High": 1024, "Medium": 768, "Low": 512}
-        max_size = size_map.get(fmt, 1024)
+        max_size = size_map.get(quality_str, 1024)
         if max(image.size) > max_size:
             image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
 
@@ -59,13 +59,13 @@ class ImagePrep:
         print(f"[LLMs_Toolkit] encoded={buf.tell()/1024:.1f}KB {fmt} ({image.width}x{image.height})")
         return f"data:image/{fmt.lower()};base64,{b64}"
 
-    def _process_tensor(self, t: torch.Tensor, fmt, qval):
+    def _process_tensor(self, t: torch.Tensor, fmt, quality_str, qval):
         urls = []
         if len(t.shape) == 4:
             for i in range(t.shape[0]):
-                urls.append(self._encode(self._tensor_to_pil(t[i]), fmt, qval))
+                urls.append(self._encode(self._tensor_to_pil(t[i]), fmt, quality_str, qval))
         else:
-            urls.append(self._encode(self._tensor_to_pil(t), fmt, qval))
+            urls.append(self._encode(self._tensor_to_pil(t), fmt, quality_str, qval))
         return urls
 
     # ── Entry ───────────────────────────────────────────────────────────
@@ -82,9 +82,9 @@ class ImagePrep:
         urls = []
         for img in imgs:
             if isinstance(img, torch.Tensor):
-                urls.extend(self._process_tensor(img, format, quality_val))
+                urls.extend(self._process_tensor(img, format, quality, quality_val))
             elif isinstance(img, Image.Image):
-                urls.append(self._encode(img, format, quality_val))
+                urls.append(self._encode(img, format, quality, quality_val))
             else:
                 raise ValueError("Unsupported image type. Expected torch.Tensor or PIL.Image.")
 
