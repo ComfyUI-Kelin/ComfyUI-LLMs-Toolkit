@@ -1,6 +1,6 @@
 import { app } from "../../../scripts/app.js";
 import { api } from "../../../scripts/api.js";
-import { $el } from "../../../scripts/ui.js";
+const { $el } = window.comfyAPI.ui;
 
 // ============================================================================
 // CSS Styles Loader
@@ -976,8 +976,8 @@ app.registerExtension({
         const manager = new ProviderManager();
 
         try {
-            const { ComfyButton } = await import("../../../scripts/ui/components/button.js");
-            const { ComfyButtonGroup } = await import("../../../scripts/ui/components/buttonGroup.js");
+            const { ComfyButton } = window.comfyAPI.button;
+            const { ComfyButtonGroup } = window.comfyAPI.buttonGroup;
 
             const llmGroup = new ComfyButtonGroup(
                 new ComfyButton({
