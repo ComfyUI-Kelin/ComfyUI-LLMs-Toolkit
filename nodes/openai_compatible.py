@@ -137,12 +137,12 @@ class OpenAICompatibleLoader:
                 "prompt": ("STRING", {"multiline": True, "default": "hello"}),
             },
             "optional": {
-                "llm_config": ("LLM_CONFIG",),  # Keep for backward compatibility
-                "prep_img": ("STRING", {"default": "", "forceInput": True}),
                 "temperature": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 2.0}),
                 "max_tokens": ("INT", {"default": 2048, "min": 1, "max": 4096}),
                 "enable_memory": ("BOOLEAN", {"default": False, "label": "Enable Memory"}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff})
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                "llm_config": ("LLM_CONFIG",),
+                "prep_img": ("STRING", {"default": "", "forceInput": True}),
             },
             "hidden": {"unique_id": "UNIQUE_ID"}
         }
@@ -309,6 +309,7 @@ class OpenAICompatibleLoader:
         actual_model = "" if model in ("Custom Input", "Custom/手动输入", _FROM_INPUT, "") else model
         provider_id = "custom"
         provider_name = "Custom Endpoint"
+        p_config = None
 
         if provider == _FROM_INPUT:
             # Mode 1: All config comes from LLM_CONFIG input node
@@ -397,7 +398,8 @@ class OpenAICompatibleLoader:
 
         # ── Make API call ────────────────────────────────────────────
         try:
-            client = LLMClient(base_url, api_key)
+            skip_ssl = p_config.get("skipSSLVerify", False) if p_config else False
+            client = LLMClient(base_url, api_key, skip_ssl_verify=skip_ssl)
             response_content, data = client.chat(payload)
 
             # Extract reasoning content (DeepSeek/R1)

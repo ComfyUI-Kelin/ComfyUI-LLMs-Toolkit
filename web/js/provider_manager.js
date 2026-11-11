@@ -36,6 +36,7 @@ const I18N_DICT = {
         connected: "Connected!",
         failed: "Failed",
         conn_failed: "Connection Failed",
+        error_detail: "Technical detail",
         network_err_title: "⚠️ Network Error",
         network_err_msg: "❌ Request failed. Network error or CORS issue.",
         search_placeholder: "Search providers/models...",
@@ -61,6 +62,12 @@ const I18N_DICT = {
         latency: "Latency",
         usage_load_err: "Failed to load usage data. Check logs.",
         select_edit: "Select a provider from the sidebar to edit.",
+        welcome_title: "Getting Started",
+        welcome_step1: "1. Pick a provider from the sidebar (e.g. DeepSeek)",
+        welcome_step2: "2. Enter your API Key",
+        welcome_step3: "3. Click Check API to verify",
+        welcome_step4: "4. Click Save and enable it",
+        welcome_tip: "Tip: DeepSeek offers ¥500 free credits for new users.",
         provider_name: "Provider Name",
         enable_nodes: "Enable in Nodes",
         base_url: "Base URL",
@@ -79,12 +86,22 @@ const I18N_DICT = {
         preview: "Preview: ",
         lang_switch: "中",
         menu_button: "LLM Manager",
-        menu_tooltip: "Manage LLM API Providers & Model Config"
+        menu_tooltip: "Manage LLM API Providers & Model Config",
+        skip_ssl: "Skip SSL Verification",
+        skip_ssl_hint: "Enable this if the provider has certificate issues (common with some Chinese API providers).",
+        need_key: "NEED KEY",
+        fetch_models: "Fetch Models",
+        fetching_models: "Fetching...",
+        fetch_models_err: "Failed to fetch models",
+        models_found: " models found",
+        new_models_added: " new",
+        no_models_found: "No models returned. The provider may not support the /models endpoint.",
+        system_url_hint: "System default. Change only if you know what you're doing."
     },
     zh: {
         manager_title: "LLM 管理器",
         unsaved_title: "未保存更改",
-        unsaved_msg: "你有未保存的更改。\\n确定要放弃它们吗？",
+        unsaved_msg: "你有未保存的更改。\n确定要放弃它们吗？",
         cancel: "取消",
         ok: "好的",
         confirm: "确认",
@@ -93,13 +110,14 @@ const I18N_DICT = {
         save_failed: "保存失败",
         save_err: "保存配置失败。",
         delete_title: "删除供应商",
-        delete_msg: "确定要删除这个自定义供应商吗？\\n此操作无法撤销。",
+        delete_msg: "确定要删除这个自定义供应商吗？\n此操作无法撤销。",
         delete_failed: "删除失败",
         delete_err: "删除供应商失败。",
         checking: "检测中...",
         connected: "连通成功！",
         failed: "连接失败",
         conn_failed: "连接失败",
+        error_detail: "技术详情",
         network_err_title: "⚠️ 网络错误",
         network_err_msg: "❌ 请求失败。网络错误或存在跨域(CORS)限制。",
         search_placeholder: "搜索 供应商/模型...",
@@ -125,6 +143,12 @@ const I18N_DICT = {
         latency: "延迟",
         usage_load_err: "加载用量数据失败，请检查日志。",
         select_edit: "请从左侧选择一个供应商进行编辑。",
+        welcome_title: "快速开始",
+        welcome_step1: "1. 从左侧选择一个供应商（如 DeepSeek）",
+        welcome_step2: "2. 填入你的 API Key",
+        welcome_step3: "3. 点击 Check API 验证连通性",
+        welcome_step4: "4. 保存并启用",
+        welcome_tip: "提示：DeepSeek 为新用户提供 500 元免费额度。",
         provider_name: "供应商名称",
         enable_nodes: "在节点中启用",
         base_url: "接口地址 (Base URL)",
@@ -143,7 +167,17 @@ const I18N_DICT = {
         preview: "预览: ",
         lang_switch: "EN",
         menu_button: "LLM 管理器",
-        menu_tooltip: "管理 LLM API 供应商与模型配置"
+        menu_tooltip: "管理 LLM API 供应商与模型配置",
+        skip_ssl: "跳过 SSL 验证",
+        skip_ssl_hint: "如果供应商存在证书问题可开启此选项（部分国内供应商可能需要）。",
+        need_key: "需配置",
+        fetch_models: "获取模型列表",
+        fetching_models: "获取中...",
+        fetch_models_err: "获取模型失败",
+        models_found: " 个模型已获取",
+        new_models_added: " 个新增",
+        no_models_found: "未返回模型列表，该供应商可能不支持 /models 接口。",
+        system_url_hint: "系统默认地址，非必要请勿修改。"
     }
 };
 
@@ -154,6 +188,21 @@ function getLang() {
 function t(key) {
     const lang = getLang();
     return I18N_DICT[lang]?.[key] || I18N_DICT["en"][key] || key;
+}
+
+function getCheckStatus(providerId) {
+    try {
+        const data = JSON.parse(localStorage.getItem("llm_pm_check_status") || "{}");
+        return data[providerId] || null;
+    } catch { return null; }
+}
+
+function setCheckStatus(providerId, status) {
+    try {
+        const data = JSON.parse(localStorage.getItem("llm_pm_check_status") || "{}");
+        data[providerId] = { status, timestamp: Date.now() };
+        localStorage.setItem("llm_pm_check_status", JSON.stringify(data));
+    } catch {}
 }
 
 // ============================================================================
@@ -184,6 +233,7 @@ class ProviderManager {
         this.searchQuery = "";
         this.modal = null;
         this.currentDraft = null;
+        this._renderGeneration = 0;
     }
 
     hasUnsavedChanges() {
@@ -281,14 +331,15 @@ class ProviderManager {
         this.showDialog({ title: title, message: message, confirmText: t("confirm"), onConfirm: onConfirm });
     }
 
-    async loadProviders() {
+    async loadProviders({ skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers");
             const data = await res.json();
             this.providers = data.providers || [];
 
-            // Auto-select first if none selected
-            if (!this.selectedId && this.providers.length > 0) {
+            // Auto-select first if none selected (skip on first visit to show welcome)
+            const hasVisited = localStorage.getItem("llm_pm_has_visited");
+            if (!this.selectedId && this.providers.length > 0 && hasVisited) {
                 this.selectedId = this.providers[0].id;
             }
             // Ensure selectedId is still valid
@@ -296,14 +347,14 @@ class ProviderManager {
                 this.selectedId = this.providers[0]?.id || null;
             }
 
-            this.render();
+            if (!skipRender) this.render();
         } catch (e) {
             console.error("[LLMs_Toolkit] Failed to load providers:", e);
             this.showAlert(t("error"), t("load_error"));
         }
     }
 
-    async saveProvider(providerData) {
+    async saveProvider(providerData, { skipRender = false } = {}) {
         try {
             const res = await api.fetchApi("/llm_toolkit/providers", {
                 method: "POST",
@@ -311,9 +362,10 @@ class ProviderManager {
             });
             const data = await res.json();
             if (data.status === "ok") {
-                await this.loadProviders();
+                invalidateProvidersCache();
+                await this.loadProviders({ skipRender });
                 this.selectedId = data.provider.id;
-                this.render();
+                if (!skipRender) this.render();
             } else {
                 this.showAlert(t("save_failed"), data.error);
             }
@@ -332,6 +384,7 @@ class ProviderManager {
                     const res = await api.fetchApi(`/llm_toolkit/providers/${id}`, { method: "DELETE" });
                     const data = await res.json();
                     if (data.status === "ok") {
+                        invalidateProvidersCache();
                         if (this.selectedId === id) this.selectedId = null;
                         await this.loadProviders();
                     } else {
@@ -345,7 +398,7 @@ class ProviderManager {
         );
     }
 
-    async checkConnectivity(apiHost, apiKey, model) {
+    async checkConnectivity(draft, model) {
         const btn = document.getElementById("pm-check-btn");
         if (!btn) return;
 
@@ -357,10 +410,25 @@ class ProviderManager {
         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="llm-pm-spin" style="margin-right:6px"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> ` + t("checking");
         btn.disabled = true;
 
+        // For existing (saved) providers, send providerId so the backend
+        // looks up the real key from disk. For new providers, send the
+        // actual apiKey since it hasn't been persisted yet.
+        const isNewProvider = draft._isNew || (draft.id && draft.id.startsWith("temp-"));
+        const checkBody = { apiHost: draft.apiHost, model };
+        if (isNewProvider) {
+            checkBody.apiKey = draft.apiKey;
+        } else {
+            checkBody.providerId = draft.id;
+            // If user entered a new key (not masked), send it directly
+            if (draft.apiKey && !draft.apiKey.includes("••••")) {
+                checkBody.apiKey = draft.apiKey;
+            }
+        }
+
         try {
             const res = await api.fetchApi("/llm_toolkit/providers/check", {
                 method: "POST",
-                body: JSON.stringify({ apiHost, apiKey, model })
+                body: JSON.stringify({ ...checkBody, skipSSLVerify: !!draft.skipSSLVerify })
             });
             const data = await res.json();
 
@@ -371,6 +439,8 @@ class ProviderManager {
                 btn.style.color = "var(--glass-success)";
                 btn.style.borderColor = "var(--glass-success)";
                 btn.style.boxShadow = "0 0 12px var(--glass-success-glow)";
+                setCheckStatus(draft.id, "ok");
+                this.renderSidebar();
             } else {
                 // Error State
                 btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> ` + t("failed");
@@ -378,10 +448,15 @@ class ProviderManager {
                 btn.style.color = "var(--glass-danger)";
                 btn.style.borderColor = "var(--glass-danger)";
                 btn.style.boxShadow = "0 0 12px rgba(248, 113, 113, 0.3)";
+                setCheckStatus(draft.id, "error");
+                this.renderSidebar();
                 console.warn("[LLMs Toolkit] Connect Error: ", data.message);
 
-                // Still show the alert for the specific error message
-                setTimeout(() => this.showAlert(t("conn_failed"), "❌ " + data.message), 100);
+                // Show user-friendly hint (if available) with raw error as detail
+                const alertMsg = data.hint
+                    ? `${data.hint}\n\n${t("error_detail")}: ${data.message}`
+                    : `❌ ${data.message}`;
+                setTimeout(() => this.showAlert(t("conn_failed"), alertMsg), 100);
             }
         } catch (e) {
             console.error(e);
@@ -577,6 +652,7 @@ class ProviderManager {
             models: [],
             enabled: true,
             isSystem: false,
+            skipSSLVerify: false,
             _isNew: true
         };
         this.providers.push(newProvider);
@@ -609,13 +685,38 @@ class ProviderManager {
         filtered.forEach(p => {
             const isActive = this.selectedId === p.id;
 
-            const tags = [$el("span.llm-pm-tag" + (p.enabled ? ".on" : ""), p.enabled ? t("on") : t("off"))];
+            const hasKey = p.apiKey && p.apiKey !== "";
+            const tagClass = p.enabled ? (hasKey ? ".on" : ".needkey") : "";
+            const tagLabel = p.enabled ? (hasKey ? t("on") : t("need_key")) : t("off");
+            const tags = [$el("span.llm-pm-tag" + tagClass, tagLabel)];
+
+            const checkInfo = getCheckStatus(p.id);
+            let dotEl = null;
+            if (checkInfo) {
+                const age = Date.now() - checkInfo.timestamp;
+                const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                if (age < sevenDays) {
+                    const dotColor = checkInfo.status === "ok" ? "var(--glass-success)" : "var(--glass-danger)";
+                    dotEl = $el("span", {
+                        style: {
+                            width: "6px", height: "6px", borderRadius: "50%",
+                            background: dotColor, display: "inline-block", marginRight: "6px",
+                            boxShadow: `0 0 4px ${dotColor}`
+                        }
+                    });
+                }
+            }
+
+            const tagsChildren = dotEl ? [dotEl, ...tags] : tags;
 
             const item = $el("div.llm-pm-item" + (isActive ? ".active" : ""), {
                 onclick: () => {
                     if (this.selectedId === p.id) return;
                     this.checkUnsaved(() => {
                         this.selectedId = p.id;
+                        if (!localStorage.getItem("llm_pm_has_visited")) {
+                            localStorage.setItem("llm_pm_has_visited", "1");
+                        }
                         this.render();
                     });
                 }
@@ -625,7 +726,7 @@ class ProviderManager {
                     $el("span", p.name)
                 ]),
                 $el("div", { style: { flex: 1 } }),
-                $el("div.llm-pm-item-tags", tags)
+                $el("div.llm-pm-item-tags", tagsChildren)
             ]);
 
             this.sidebarListContainer.appendChild(item);
@@ -633,6 +734,7 @@ class ProviderManager {
     }
 
     async renderContent() {
+        const gen = ++this._renderGeneration;
         this.contentContainer.innerHTML = "";
 
         if (this.selectedId === "USAGE_STATS") {
@@ -641,6 +743,7 @@ class ProviderManager {
 
             try {
                 const res = await api.fetchApi("/llm_toolkit/usage");
+                if (gen !== this._renderGeneration) return;
                 if (!res.ok) {
                     this.contentContainer.innerHTML = "";
                     if (res.status === 404) {
@@ -651,6 +754,7 @@ class ProviderManager {
                     return;
                 }
                 const data = await res.json();
+                if (gen !== this._renderGeneration) return;
 
                 this.contentContainer.innerHTML = "";
                 this.contentContainer.appendChild($el("h2", { textContent: t("usage_dashboard"), style: { margin: "0 0 12px 0" } }));
@@ -708,7 +812,7 @@ class ProviderManager {
                     const tr = $el("tr", { style: { borderBottom: "1px solid var(--border-color)", background: isError ? "rgba(244,67,54,0.08)" : "transparent" } });
                     const date = new Date(row.timestamp * 1000).toLocaleString();
 
-                    tr.appendChild($el("td", { style: { padding: "8px", textAlign: "center" }, innerHTML: isError ? `<span style="color:#f44336" title=t("error")>✗</span>` : `<span style="color:#4CAF50" title=t("ok")>✓</span>` }));
+                    tr.appendChild($el("td", { style: { padding: "8px", textAlign: "center" }, innerHTML: isError ? `<span style="color:#f44336" title="${t("error")}">✗</span>` : `<span style="color:#4CAF50" title="${t("ok")}">✓</span>` }));
                     tr.appendChild($el("td", { style: { padding: "8px" }, textContent: date }));
                     tr.appendChild($el("td", { style: { padding: "8px", fontWeight: "bold" }, textContent: row.provider }));
                     tr.appendChild($el("td", { style: { padding: "8px" }, textContent: row.model }));
@@ -730,9 +834,38 @@ class ProviderManager {
 
         const provider = this.providers.find(p => p.id === this.selectedId);
         if (!provider) {
-            this.contentContainer.appendChild(
-                $el("div.llm-pm-empty", t("select_edit"))
-            );
+            // Welcome / empty state
+            const welcome = $el("div", {
+                style: {
+                    display: "flex", flexDirection: "column", justifyContent: "center",
+                    alignItems: "center", height: "100%", padding: "40px", textAlign: "center"
+                }
+            }, [
+                $el("h2", {
+                    textContent: t("welcome_title"),
+                    style: { margin: "0 0 24px 0", fontSize: "1.2em", color: "var(--glass-text-primary)" }
+                }),
+                $el("div", {
+                    style: {
+                        textAlign: "left", fontSize: "0.92em", lineHeight: "2.2",
+                        color: "var(--glass-text-secondary)", maxWidth: "360px"
+                    }
+                }, [
+                    $el("div", { textContent: t("welcome_step1") }),
+                    $el("div", { textContent: t("welcome_step2") }),
+                    $el("div", { textContent: t("welcome_step3") }),
+                    $el("div", { textContent: t("welcome_step4") }),
+                ]),
+                $el("div", {
+                    textContent: t("welcome_tip"),
+                    style: {
+                        marginTop: "20px", fontSize: "0.82em", color: "var(--glass-text-tertiary)",
+                        padding: "10px 16px", background: "rgba(99, 102, 241, 0.08)",
+                        borderRadius: "8px", border: "1px solid rgba(99, 102, 241, 0.15)"
+                    }
+                })
+            ]);
+            this.contentContainer.appendChild(welcome);
             return;
         }
 
@@ -753,19 +886,27 @@ class ProviderManager {
             $el("input", {
                 type: "checkbox",
                 checked: draft.enabled,
-                onchange: (e) => {
+                onchange: async (e) => {
                     draft.enabled = e.target.checked;
-                    this.saveProvider(draft); // auto save toggle
+                    // Save only the enabled state using the original provider data,
+                    // so that other unsaved draft edits (name, key, etc.) are not persisted.
+                    const original = this.providers.find(p => p.id === draft.id);
+                    if (original && !original._isNew) {
+                        original.enabled = e.target.checked;
+                        await this.saveProvider({ ...original }, { skipRender: true });
+                        this.renderSidebar();
+                    }
                 }
             }),
             $el("span.llm-pm-slider")
         ]);
 
         // -- API Key
+        const isMaskedKey = draft.apiKey && draft.apiKey.includes("••••");
         const keyInput = $el("input", {
             type: "password",
-            value: draft.apiKey,
-            placeholder: "sk-...",
+            value: isMaskedKey ? "" : draft.apiKey,
+            placeholder: isMaskedKey ? draft.apiKey : "sk-...",
             style: { paddingRight: "40px" }, // Make room for the absolute eye icon
             oninput: (e) => draft.apiKey = e.target.value
         });
@@ -803,7 +944,7 @@ class ProviderManager {
         const checkBtn = $el("button", {
             id: "pm-check-btn",
             innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Check API`,
-            onclick: () => this.checkConnectivity(draft.apiHost, draft.apiKey, draft.models[0] || ""),
+            onclick: () => this.checkConnectivity(draft, draft.models[0] || ""),
             style: {
                 padding: "8px 16px", fontSize: "0.88em", borderRadius: "10px", minHeight: "unset",
                 display: "inline-flex", alignItems: "center", cursor: "pointer",
@@ -870,6 +1011,57 @@ class ProviderManager {
                 ]));
             });
 
+            // Fetch Models button
+            const fetchModelsBtn = $el("span", {
+                className: "llm-pm-model-add",
+                innerHTML: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models"),
+                onclick: async () => {
+                    fetchModelsBtn.innerHTML = t("fetching_models");
+                    fetchModelsBtn.style.pointerEvents = "none";
+
+                    const isNew = draft._isNew || (draft.id && draft.id.startsWith("temp-"));
+                    const fetchBody = { apiHost: draft.apiHost, skipSSLVerify: !!draft.skipSSLVerify };
+                    if (isNew) {
+                        fetchBody.apiKey = draft.apiKey;
+                    } else {
+                        fetchBody.providerId = draft.id;
+                        if (draft.apiKey && !draft.apiKey.includes("\u2022\u2022\u2022\u2022")) {
+                            fetchBody.apiKey = draft.apiKey;
+                        }
+                    }
+
+                    try {
+                        const res = await api.fetchApi("/llm_toolkit/providers/models", {
+                            method: "POST",
+                            body: JSON.stringify(fetchBody)
+                        });
+                        const data = await res.json();
+                        if (data.status === "ok" && data.models && data.models.length > 0) {
+                            const existingSet = new Set(draft.models);
+                            let addedCount = 0;
+                            data.models.forEach(m => {
+                                if (!existingSet.has(m)) {
+                                    draft.models.push(m);
+                                    addedCount++;
+                                }
+                            });
+                            renderModels();
+                            this.showAlert("\u2713", `${data.models.length}${t("models_found")}` + (addedCount > 0 ? ` (+${addedCount}${t("new_models_added")})` : ""));
+                        } else if (data.status === "ok") {
+                            this.showAlert(t("fetch_models"), t("no_models_found"));
+                        } else {
+                            this.showAlert(t("fetch_models_err"), data.message || "Unknown error");
+                        }
+                    } catch (e) {
+                        this.showAlert(t("fetch_models_err"), e.message);
+                    }
+
+                    fetchModelsBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>` + t("fetch_models");
+                    fetchModelsBtn.style.pointerEvents = "";
+                }
+            });
+            modelsContainer.appendChild(fetchModelsBtn);
+
             // Add button
             modelsContainer.appendChild($el("span.llm-pm-model-add", {
                 textContent: t("add_model"),
@@ -899,14 +1091,12 @@ class ProviderManager {
                 saveBtn.disabled = true;
 
                 if (draft._isNew) delete draft._isNew;
-                await this.saveProvider(draft);
+                await this.saveProvider(draft, { skipRender: true });
 
                 saveBtn.innerHTML = t("saved");
                 saveBtn.style.background = "#3d8b40"; // slightly darker green
                 setTimeout(() => {
-                    saveBtn.innerHTML = originalHtml;
-                    saveBtn.style.background = "#4CAF50";
-                    saveBtn.disabled = false;
+                    this.render();
                 }, 1500);
             }
         });
@@ -941,7 +1131,28 @@ class ProviderManager {
                 $el("div.llm-pm-field-hint", {
                     id: "pm-url-preview",
                     textContent: `${t("preview")}${draft.apiHost} /chat/completions`
-                })
+                }),
+                ...(draft.isSystem ? [$el("div.llm-pm-field-hint", {
+                    textContent: "\uD83D\uDD12 " + t("system_url_hint"),
+                    style: { opacity: "0.7", fontStyle: "italic" }
+                })] : [])
+            ]),
+
+            $el("div.llm-pm-field", [
+                $el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.8em", fontWeight: "600", color: "var(--glass-text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" } }, [
+                    $el("span", t("skip_ssl")),
+                    $el("label.llm-pm-switch", [
+                        $el("input", {
+                            type: "checkbox",
+                            checked: !!draft.skipSSLVerify,
+                            onchange: (e) => {
+                                draft.skipSSLVerify = e.target.checked;
+                            }
+                        }),
+                        $el("span.llm-pm-slider")
+                    ])
+                ]),
+                $el("div.llm-pm-field-hint", t("skip_ssl_hint"))
             ]),
 
             $el("div.llm-pm-field", [
@@ -963,6 +1174,29 @@ class ProviderManager {
 
         fields.forEach(f => this.contentContainer.appendChild(f));
     }
+}
+
+// ============================================================================
+// Shared Providers Cache (module-level, used by all nodes)
+// ============================================================================
+let _providersCachePromise = null;
+
+function fetchProvidersShared() {
+    if (!_providersCachePromise) {
+        _providersCachePromise = api.fetchApi("/llm_toolkit/providers")
+            .then(res => res.json())
+            .then(data => data.providers || [])
+            .catch(e => {
+                console.error("[LLMs_Toolkit] Failed to fetch providers", e);
+                _providersCachePromise = null; // allow retry on error
+                return [];
+            });
+    }
+    return _providersCachePromise;
+}
+
+function invalidateProvidersCache() {
+    _providersCachePromise = null;
 }
 
 // ============================================================================
@@ -1026,17 +1260,10 @@ app.registerExtension({
 
         if (!providerWidget || !modelWidget) return;
 
-        // Fetch current providers to have the mapping of Provider -> Models
-        let providersCache = [];
-        try {
-            const res = await api.fetchApi("/llm_toolkit/providers");
-            const data = await res.json();
-            providersCache = data.providers || [];
-        } catch (e) {
-            console.error("[LLMs_Toolkit] Failed to fetch providers for node", e);
-        }
+        // Use shared module-level cache (single request shared across all nodes)
+        const providersCache = await fetchProvidersShared();
 
-        const updateModelOptions = (selectedProviderLabel) => {
+        const updateModelOptions = (selectedProviderLabel, providers) => {
             if (selectedProviderLabel === "LLM_CONFIG (from input)") {
                 modelWidget.options.values = ["LLM_CONFIG (from input)"];
                 if (modelWidget.value !== "LLM_CONFIG (from input)") {
@@ -1046,7 +1273,7 @@ app.registerExtension({
             }
 
             // Match provider by name, must be enabled
-            const found = providersCache.find(p => p.name === selectedProviderLabel && p.enabled);
+            const found = providers.find(p => p.name === selectedProviderLabel && p.enabled);
             if (found && found.models && found.models.length > 0) {
                 modelWidget.options.values = found.models;
                 if (!found.models.includes(modelWidget.value)) {
@@ -1061,13 +1288,15 @@ app.registerExtension({
 
         // Initial setup based on current value
         if (providerWidget.value) {
-            updateModelOptions(providerWidget.value);
+            updateModelOptions(providerWidget.value, providersCache);
         }
 
-        // Listen for changes on the provider widget
+        // Listen for changes on the provider widget — always re-fetch
+        // so that saves/deletes from the Provider Manager are picked up
         const originalCallback = providerWidget.callback;
-        providerWidget.callback = function () {
-            updateModelOptions(this.value);
+        providerWidget.callback = async function () {
+            const latestProviders = await fetchProvidersShared();
+            updateModelOptions(this.value, latestProviders);
             if (originalCallback) {
                 originalCallback.apply(this, arguments);
             }

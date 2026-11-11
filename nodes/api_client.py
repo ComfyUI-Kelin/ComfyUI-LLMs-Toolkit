@@ -146,19 +146,26 @@ def log_error(err: APIError, provider_name: str, model: str,
 
 # ─── HTTP Client ─────────────────────────────────────────────────────────────
 
-# Shared SSL context (created once, reused across all calls)
-_ssl_context = None
+# Shared SSL contexts (created once, reused across all calls)
+_ssl_ctx_verify = None
+_ssl_ctx_noverify = None
 
-def _get_ssl_context() -> ssl.SSLContext:
-    """Get or create a lenient SSL context for Chinese API providers."""
-    global _ssl_context
-    if _ssl_context is None:
-        _ssl_context = ssl.create_default_context()
-        _ssl_context.check_hostname = False
-        _ssl_context.verify_mode = ssl.CERT_NONE
-        _ssl_context.set_ciphers("DEFAULT")
-        _ssl_context.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
-    return _ssl_context
+def _get_ssl_context(skip_verify: bool = False) -> ssl.SSLContext:
+    """Get or create an SSL context. Verification is ON by default."""
+    global _ssl_ctx_verify, _ssl_ctx_noverify
+    if skip_verify:
+        if _ssl_ctx_noverify is None:
+            _ssl_ctx_noverify = ssl.create_default_context()
+            _ssl_ctx_noverify.check_hostname = False
+            _ssl_ctx_noverify.verify_mode = ssl.CERT_NONE
+            _ssl_ctx_noverify.set_ciphers("DEFAULT")
+            _ssl_ctx_noverify.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
+        return _ssl_ctx_noverify
+    else:
+        if _ssl_ctx_verify is None:
+            _ssl_ctx_verify = ssl.create_default_context()
+            _ssl_ctx_verify.set_ciphers("DEFAULT")
+        return _ssl_ctx_verify
 
 
 def _normalize_url(base_url: str, path: str = "/chat/completions") -> str:
@@ -199,13 +206,14 @@ class LLMClient:
         api_key: str,
         max_retries: int = 3,
         timeout: int = 180,
+        skip_ssl_verify: bool = False,
     ):
         self.url = _normalize_url(base_url)
         self.base_url = self.url.replace("/chat/completions", "")
         self.api_key = api_key
         self.max_retries = max_retries
         self.timeout = timeout
-        self._ctx = _get_ssl_context()
+        self._ctx = _get_ssl_context(skip_ssl_verify)
         
     def _get_headers(self) -> Dict[str, str]:
         return {

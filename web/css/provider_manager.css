@@ -216,6 +216,12 @@
     border-color: rgba(52, 211, 153, 0.25);
 }
 
+.llm-pm-tag.needkey {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.25);
+}
+
 /* -- Sidebar Footer -- */
 .llm-pm-sidebar-footer {
     padding: 12px 14px;

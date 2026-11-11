@@ -109,6 +109,7 @@ class LLMTranslator:
         start_time = time.time()
         
         # Build configuration (Use provided llm_config if connected, otherwise lookup from providers.json)
+        selected_provider = None
         if llm_config is None:
             providers_data = get_providers_data()
             selected_provider = next((p for p in providers_data if p["name"] == provider), None)
@@ -153,11 +154,13 @@ class LLMTranslator:
 
         # Call API via shared client
         try:
+            skip_ssl = selected_provider.get("skipSSLVerify", False) if selected_provider else False
             client = LLMClient(
                 base_url=config.get("base_url", ""),
                 api_key=config.get("api_key", ""),
                 max_retries=3,
                 timeout=60,
+                skip_ssl_verify=skip_ssl,
             )
             translated_text, _ = client.chat(payload)
 

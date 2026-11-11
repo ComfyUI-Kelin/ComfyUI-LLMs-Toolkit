@@ -11,13 +11,13 @@
 
 ---
 
-[![GitHub Stars](https://img.shields.io/github/stars/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=yellow)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=green)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/network)
-[![GitHub Issues](https://img.shields.io/github/issues/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=red)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues)
-[![License](https://img.shields.io/github/license/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=blue)](LICENSE)
-[![Last Commit](https://img.shields.io/github/last-commit/HuangYuChuh/ComfyUI-LLMs-Toolkit?style=flat&color=orange)](https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/commits)
+[![GitHub Stars](https://img.shields.io/github/stars/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=yellow)](https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=green)](https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/network)
+[![GitHub Issues](https://img.shields.io/github/issues/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit?style=flat&logo=github&color=red)](https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/issues)
+[![License](https://img.shields.io/github/license/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit?style=flat&color=blue)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit?style=flat&color=orange)](https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/commits)
 
-**Bring the power of Large Language Models into your ComfyUI workflows — no GPU needed.**
+**ComfyUI custom nodes for DeepSeek, Qwen, GPT, and other OpenAI-compatible LLM APIs, with built-in tools for chat, translation, vision, and JSON workflows.**
 
 </div>
 
@@ -25,9 +25,9 @@
 
 ## What is this?
 
-ComfyUI-LLMs-Toolkit lets you call mainstream LLMs (like DeepSeek, Qwen, GPT, Moonshot, and many more) directly from your ComfyUI workflows using simple API connections. 
+ComfyUI-LLMs-Toolkit is a ComfyUI custom node pack for connecting DeepSeek, Qwen, GPT, Moonshot, and other OpenAI-compatible LLM APIs directly inside ComfyUI workflows.
 
-Whether you want to generate text, translate content, process images with vision models, or build structured JSON — this toolkit has you covered.
+Use it to build LLM-powered ComfyUI workflows for prompt generation, translation, structured JSON output, image understanding with multimodal models, and other text or vision automation tasks without running a local GPU model.
 
 ### Key Features
 
@@ -52,7 +52,7 @@ Whether you want to generate text, translate content, process images with vision
 
 ```bash
 cd ComfyUI/custom_nodes/
-git clone https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit.git
+git clone https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit.git
 cd ComfyUI-LLMs-Toolkit
 pip install -r requirements.txt
 ```
@@ -200,9 +200,9 @@ Your API keys are stored **locally** on your machine in `config/providers.json`.
 
 ### If this project helps you, please give it a Star!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=HuangYuChuh/ComfyUI-LLMs-Toolkit&type=Date)](https://star-history.com/#HuangYuChuh/ComfyUI-LLMs-Toolkit&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ComfyUI-Kelin/ComfyUI-LLMs-Toolkit&type=Date)](https://star-history.com/#ComfyUI-Kelin/ComfyUI-LLMs-Toolkit&Date)
 
-[![GitHub](https://img.shields.io/badge/GitHub-@HuangYuChuh-181717?style=flat&logo=github)](https://github.com/HuangYuChuh)
+[![GitHub](https://img.shields.io/badge/GitHub-@ComfyUI-Kelin-181717?style=flat&logo=github)](https://github.com/ComfyUI-Kelin)
 
 **Made with ❤️ for the ComfyUI community**
 

@@ -23,10 +23,10 @@ license = {file = "LICENSE"}
 dependencies = ["Pillow", "aiohttp"]
 
 [project.urls]
-Repository = "https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit"
+Repository = "https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit"
 #  Used by Comfy Registry https://registry.comfy.org
-Documentation = "https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/wiki"
-"Bug Tracker" = "https://github.com/HuangYuChuh/ComfyUI-LLMs-Toolkit/issues"
+Documentation = "https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/wiki"
+"Bug Tracker" = "https://github.com/ComfyUI-Kelin/ComfyUI-LLMs-Toolkit/issues"
 
 [tool.comfy]
 PublisherId = ""
